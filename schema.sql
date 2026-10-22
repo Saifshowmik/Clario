@@ -1,6 +1,3 @@
--- Clario schema. Run once in Supabase > SQL Editor.
--- Security lives here, not in the web page: row-level security (RLS) plus owner-only functions.
-
 create table public.profiles(
   id uuid primary key references auth.users(id) on delete cascade,
   email text, name text,
