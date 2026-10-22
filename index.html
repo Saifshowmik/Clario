@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Clario — Clarity for Every Choice.</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&family=Jost:wght@500;600&family=Noto+Sans+Bengali:wght@400;600&display=swap">
+<style>
+:root{--dt:#0B4F5C;--dd:#083A45;--teal:#19B6A6;--or:#F4A94E;--pu:#5B3FD6;--nv:#0A1630;--nc:#0F2347;--t2:#CFE9EC;--bd:#2A3F6B;--cb:#5E7FA3;--er:#FF8A8A;--fh:'Jost','Noto Sans Bengali',sans-serif;--fb:'DM Sans','Noto Sans Bengali',sans-serif;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 72px);height:100%}
+*{box-sizing:border-box}
+body{margin:0;min-height:100%;background:var(--dt);color:#fff;font:18px/1.6 var(--fb)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--dd);z-index:20}
+:focus-visible{outline:3px solid #fff;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:15;background:var(--dd);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 16px;border-block-end:1px solid var(--bd)}
+.brand{display:flex;align-items:center;gap:8px;font:600 22px var(--fh);color:#fff;background:none;border:0;padding:0}
+.brand svg{width:34px;height:34px}
+nav{display:flex;gap:4px}
+button,input,select{font:inherit}
+button{cursor:pointer;min-height:48px}
+.lk{background:none;border:0;color:var(--t2);padding:0 14px;font-size:16px;border-radius:12px}
+.lk[aria-current=page]{color:#fff;background:var(--nc)}
+#lang{background:var(--nc);color:#fff;border:1px solid var(--cb);border-radius:999px;padding:0 18px;font-size:16px}
+@media(max-width:767px){nav{position:fixed;inset:auto 0 0 0;z-index:15;background:var(--dd);justify-content:space-around;padding:4px 4px calc(4px + env(safe-area-inset-bottom,0px));border-block-start:1px solid var(--bd)}.lk{padding:0 4px;font-size:14px;flex:1}body{padding-bottom:76px}}
+.hero{background:linear-gradient(135deg,var(--dt),var(--dd) 60%,var(--nv));text-align:center;padding:64px 20px 72px}
+.hero h1{font:600 clamp(34px,7vw,58px)/1.15 var(--fh);margin:0 auto 16px;max-width:760px}
+.hero p{max-width:580px;margin:0 auto 28px;color:var(--t2)}
+.btn{background:var(--or);color:var(--nv);font-weight:600;border:0;border-radius:12px;padding:0 28px;min-height:48px;margin:4px}
+.btn.s{background:none;color:#fff;border:2px solid var(--cb)}
+.btn:hover{filter:brightness(1.08)}
+.pg{max-width:1000px;margin:0 auto;padding:0 20px}
+section{padding:48px 0}
+h2{font:600 clamp(26px,4.5vw,34px)/1.2 var(--fh);margin:0 0 8px}
+h3{font:600 20px var(--fh);margin:0 0 6px}
+.sub,.card p,li{color:var(--t2)}
+.sub{margin:0 0 24px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{background:var(--nc);border:1px solid var(--bd);border-radius:20px;padding:24px}
+.card p{margin:0;font-size:16px}
+.num{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--teal);color:var(--nv);font-weight:600;margin-bottom:10px}
+.tag{display:inline-block;font-size:14px;background:var(--pu);color:#fff;border-radius:999px;padding:2px 12px;margin-top:10px}
+.big{font:600 28px var(--fh);margin:4px 0}
+.panel{background:var(--nc);border:1px solid var(--bd);border-radius:24px;padding:24px;margin-bottom:16px}
+label{display:block;font-size:14px;color:var(--t2);margin:0 0 4px}
+input[type=text],input[type=number],input[type=password],select{width:100%;min-height:48px;background:var(--nv);color:#fff;border:1px solid var(--cb);border-radius:12px;padding:8px 12px;font-size:16px}
+.row{display:grid;gap:10px;grid-template-columns:2fr 1fr 1fr;margin-bottom:12px}
+@media(max-width:520px){.row{grid-template-columns:1fr 1fr}.row div:first-child{grid-column:1/-1}}
+.prio{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 18px}
+.prio label{display:inline-flex;align-items:center;gap:8px;min-height:48px;border:1px solid var(--cb);border-radius:999px;padding:0 16px;color:#fff;font-size:16px;margin:0;cursor:pointer}
+.prio input:checked+span{font-weight:600;color:var(--or)}
+.win{border:2px solid var(--teal);border-radius:20px;padding:20px;background:var(--nv);margin-top:20px}
+.win ul,.panel ul{padding-inline-start:20px;margin:6px 0}
+.err{color:var(--er);font-size:16px;margin:10px 0 0}
+details{background:var(--nc);border:1px solid var(--bd);border-radius:16px;padding:4px 20px;margin-bottom:12px}
+summary{min-height:48px;display:flex;align-items:center;font-weight:600;cursor:pointer}
+details p{margin:0 0 16px;color:var(--t2)}
+footer{background:var(--dd);text-align:center;color:var(--t2);font-size:14px;padding:28px 20px 36px}
+.fl{background:none;border:0;color:#fff;text-decoration:underline;padding:0 12px;font-size:14px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+</head>
+<body>
+<header>
+  <button class="brand" type="button" data-go="home" aria-label="Clario">
+    <svg viewBox="0 0 120 120" fill="none" stroke-width="9" stroke-linecap="round" aria-hidden="true"><path d="M96.25 88.33A46 46 0 1 1 96.25 31.67" stroke="#5B3FD6"/><path d="M86.79 80.94A34 34 0 1 1 86.79 39.06" stroke="#19B6A6"/><path d="M77.34 73.55A22 22 0 1 1 77.34 46.45" stroke="#F4A94E"/><circle cx="60" cy="60" r="8" fill="#F4A94E" stroke="none"/></svg>Clario
+  </button>
+  <nav aria-label="Main">
+    <button class="lk" type="button" data-go="home" data-i="n_home"></button>
+    <button class="lk" type="button" data-go="decide" data-i="n_dec"></button>
+    <button class="lk" type="button" data-go="dash" data-i="n_dash"></button>
+    <button class="lk" type="button" data-go="plans" data-i="n_plans"></button>
+    <button class="lk" type="button" data-go="acct" data-i="n_acct"></button>
+  </nav>
+  <button id="lang" type="button">বাংলা</button>
+</header>
+
+<main>
+<div class="pg" id="p-home">
+  <div class="hero" style="margin:0 -20px">
+    <h1 data-i="h1"></h1>
+    <p data-i="hsub"></p>
+    <button class="btn" type="button" data-go="decide" data-i="cta"></button>
+    <button class="btn s" type="button" data-go="plans" data-i="n_plans"></button>
+  </div>
+  <section>
+    <h2 data-i="how_t"></h2><p class="sub" data-i="how_s"></p>
+    <div class="grid">
+      <div class="card"><div class="num">1</div><h3 data-i="s1_t"></h3><p data-i="s1_p"></p></div>
+      <div class="card"><div class="num">2</div><h3 data-i="s2_t"></h3><p data-i="s2_p"></p></div>
+      <div class="card"><div class="num">3</div><h3 data-i="s3_t"></h3><p data-i="s3_p"></p></div>
+    </div>
+  </section>
+  <section>
+    <h2 data-i="cat_t"></h2><p class="sub" data-i="cat_s"></p>
+    <div class="grid">
+      <div class="card"><h3 data-i="c1_t"></h3><p data-i="c1_p"></p></div>
+      <div class="card"><h3 data-i="c2_t"></h3><p data-i="c2_p"></p></div>
+      <div class="card"><h3 data-i="c3_t"></h3><p data-i="c3_p"></p><span class="tag" data-i="soon"></span></div>
+    </div>
+  </section>
+</div>
+
+<div class="pg" id="p-decide" hidden>
+  <section>
+    <h2 data-i="dec_t"></h2><p class="sub" data-i="try_s"></p>
+    <div class="panel">
+      <label for="budget" data-i="budget"></label>
+      <input type="number" id="budget" inputmode="numeric" min="0" placeholder="25000" style="margin-bottom:16px">
+      <label data-i="prio"></label>
+      <div class="prio">
+        <label><input type="radio" name="prio" value="price"><span data-i="p_price"></span></label>
+        <label><input type="radio" name="prio" value="balanced" checked><span data-i="p_bal"></span></label>
+        <label><input type="radio" name="prio" value="quality"><span data-i="p_qual"></span></label>
+      </div>
+      <div id="rows"></div>
+      <button class="btn" id="go" type="button" data-i="go" style="margin-inline:0"></button>
+      <div class="err" id="err" role="alert"></div>
+      <div id="out" aria-live="polite"></div>
+    </div>
+  </section>
+</div>
+
+<div class="pg" id="p-dash" hidden>
+  <section>
+    <h2 data-i="dash_t"></h2><p class="sub" id="cnt"></p>
+    <div class="panel">
+      <h3 data-i="prof_t"></h3>
+      <label for="pn" data-i="pname"></label><input type="text" id="pn" autocomplete="name" style="margin-bottom:12px">
+      <label for="pb" data-i="pbud"></label><input type="number" id="pb" inputmode="numeric" min="0" style="margin-bottom:12px">
+      <label for="pp" data-i="prio"></label>
+      <select id="pp" style="margin-bottom:16px"><option value="price" data-i="p_price"></option><option value="balanced" data-i="p_bal"></option><option value="quality" data-i="p_qual"></option></select>
+      <button class="btn" id="sp" type="button" data-i="save" style="margin-inline:0"></button> <span id="pm" role="status"></span>
+    </div>
+    <div class="panel"><h3 data-i="mypay"></h3><ul id="mp"></ul></div>
+    <div class="panel"><h3 data-i="hist"></h3><ul id="hl"></ul></div>
+    <div class="panel"><p style="margin:0 0 12px" data-i="priv"></p><button class="btn s" id="cl" type="button" data-i="clr" style="margin-inline:0"></button></div>
+  </section>
+</div>
+
+<div class="pg" id="p-plans" hidden>
+  <section>
+    <h2 data-i="pl_t"></h2><p class="sub" data-i="pl_s"></p>
+    <div class="grid">
+      <div class="card"><h3 data-i="f_t"></h3><div class="big">৳0</div><ul><li data-i="f1"></li><li data-i="f2"></li></ul></div>
+      <div class="card"><h3>Pro</h3><div class="big" id="pr-pro">[PRICE]</div><ul><li data-i="pr1"></li><li data-i="lp"></li></ul><span class="tag" data-i="soon"></span></div>
+      <div class="card"><h3>Premium</h3><div class="big" id="pr-premium">[PRICE]</div><ul><li data-i="pm1"></li><li data-i="lp"></li></ul><span class="tag" data-i="soon"></span></div>
+      <div class="card"><h3>Extra Premium</h3><div class="big" id="pr-extra_premium">[PRICE]</div><ul><li data-i="xp1"></li><li data-i="lp"></li></ul><span class="tag" data-i="soon"></span></div>
+    </div>
+    <div class="panel" id="up" style="margin-top:16px" hidden>
+      <h3 data-i="up_t"></h3><p class="sub" id="upn"></p>
+      <label for="upp" data-i="plan"></label><select id="upp" style="margin-bottom:12px"><option value="pro">Pro</option><option value="premium">Premium</option><option value="extra_premium">Extra Premium</option></select>
+      <label for="upd" data-i="bill"></label><select id="upd" style="margin-bottom:12px"><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select>
+      <label for="upm" data-i="meth"></label><select id="upm" style="margin-bottom:12px"><option value="bkash">bKash</option><option value="nagad">Nagad</option></select>
+      <label for="upt" data-i="trx"></label><input type="text" id="upt" autocomplete="off" style="margin-bottom:16px">
+      <button class="btn" id="upb" type="button" data-i="up_go" style="margin-inline:0"></button> <span id="ups" role="status"></span>
+    </div>
+    <p class="sub" id="upl" data-i="up_login" hidden></p>
+  </section>
+</div>
+
+<div class="pg" id="p-acct" hidden>
+  <section>
+    <h2 data-i="n_acct"></h2>
+    <div class="panel" id="nb" hidden><p style="margin:0" data-i="nobk"></p></div>
+    <div class="panel" id="lo" hidden>
+      <label for="em" data-i="email"></label><input type="text" id="em" autocomplete="email" style="margin-bottom:12px">
+      <label for="pw" data-i="pass"></label><input type="password" id="pw" autocomplete="current-password" style="margin-bottom:16px">
+      <button class="btn" id="bl" type="button" data-i="login" style="margin-inline:0"></button>
+      <button class="btn s" id="bs" type="button" data-i="signup"></button>
+      <button class="fl" id="bf" type="button" data-i="forgot" style="min-height:48px"></button>
+    </div>
+    <div class="panel" id="rp" hidden><label for="np" data-i="newp"></label><input type="password" id="np" autocomplete="new-password" style="margin-bottom:12px"><button class="btn" id="bn" type="button" data-i="save" style="margin-inline:0"></button></div>
+    <div class="panel" id="li" hidden><p id="who" style="margin:0 0 12px"></p><button class="btn s" id="bo" type="button" data-i="logout" style="margin-inline:0"></button></div>
+    <div id="am" role="status"></div>
+  </section>
+</div>
+
+<div class="pg" id="p-admin" hidden>
+  <section>
+    <h2>Admin console</h2><p class="sub">Owner only. Every action needs a written reason and is saved to the audit log. The database enforces this, not this page.</p>
+    <div class="panel"><label for="ar">Reason (required for any action below)</label><input type="text" id="ar"><div class="err" id="ae" role="alert"></div></div>
+    <div class="panel"><h3>Pending payments</h3><div id="ap"></div></div>
+    <div class="panel"><h3>Set a price (৳)</h3><div class="row"><div><label for="xp">Plan</label><select id="xp"></select></div><div><label for="xd">Billing</label><select id="xd"></select></div><div><label for="xv">Price</label><input type="number" id="xv" min="0"></div></div><button class="btn" id="xs" type="button" style="margin-inline:0">Set price</button></div>
+    <div class="panel"><h3>Users and plans</h3><div id="au"></div></div>
+    <div class="panel"><h3>Audit log</h3><ul id="aa"></ul></div>
+  </section>
+</div>
+
+<div class="pg" id="p-about" hidden>
+  <section>
+    <h2 data-i="ab_t"></h2>
+    <p class="sub" data-i="ab_p"></p>
+    <div class="card"><p>[OUR STORY]</p></div>
+  </section>
+</div>
+
+<div class="pg" id="p-help" hidden>
+  <section>
+    <h2 data-i="help_t"></h2>
+    <details><summary data-i="q1"></summary><p data-i="a1"></p></details>
+    <details><summary data-i="q2"></summary><p data-i="a2"></p></details>
+    <details><summary data-i="q3"></summary><p data-i="a3"></p></details>
+  </section>
+</div>
+
+<div class="pg" id="p-legal" hidden>
+  <section>
+    <h2 data-i="lg"></h2>
+    <div class="card"><p data-i="priv"></p></div><br>
+    <div class="card"><p data-i="lg_p"></p></div>
+  </section>
+</div>
+</main>
+
+<footer>
+  <div><button class="fl" type="button" data-go="about" data-i="n_about"></button><button class="fl" type="button" data-go="help" data-i="help_t"></button><button class="fl" type="button" data-go="legal" data-i="lg"></button><button class="fl" id="adm" type="button" data-go="admin" hidden>Admin</button></div>
+  <div><span data-i="ct"></span> [OFFICIAL EMAIL]</div>
+  <div>© Clario · <span data-i="tag"></span></div>
+</footer>
+
+<script>
+var D={
+en:{n_acct:"Account",email:"Email",pass:"Password",login:"Log in",signup:"Sign up",forgot:"Forgot password?",logout:"Log out",newp:"New password",nobk:"The backend is not connected yet. See README.md to connect Supabase.",who:"Signed in as",plan:"Plan",up_t:"Upgrade your plan",up_login:"Log in to upgrade.",meth:"Payment method",trx:"Transaction ID",up_go:"Send for approval",bill:"Billing",paynote:"Send the amount to {w}, then enter the transaction ID. It is approved within [SUPPORT HOURS].",sent:"Sent. See the status on your dashboard.",chk:"Check your email to confirm your account.",rst:"Password reset email sent.",pdone:"Password updated.",mypay:"Your payment requests",n_home:"Home",n_dec:"Decide",n_dash:"Dashboard",n_plans:"Plans",n_about:"About",h1:"Clarity for Every Choice.",hsub:"Compare your options with personalized analysis. Less confusion. More confidence.",cta:"Start your decision",how_t:"How it works",how_s:"Three simple steps from confused to confident.",s1_t:"Tell us what matters",s1_p:"Your budget and what you care about most.",s2_t:"Add your options",s2_p:"Two to four things you are choosing between.",s3_t:"Choose with confidence",s3_p:"Get one clear pick, and why it fits you.",cat_t:"Decision categories",cat_s:"Help for choices big and small.",c1_t:"Tech and gadgets",c1_p:"Phones, laptops and more.",c2_t:"Daily shopping and fashion",c2_p:"From bazaar items to clothes.",c3_t:"Life and relationships",c3_p:"Thoughtful, private guidance.",soon:"Coming soon",dec_t:"Make a decision",try_s:"Add two to four options. No sign-up needed.",budget:"Your budget (৳)",prio:"What matters most?",p_price:"Low price",p_bal:"Balanced",p_qual:"Best quality",name:"Option name",price:"Price (৳)",rate:"Rating (1–5)",go:"Pick the best for me",need:"Please fill in at least two options with a name, price and rating from 1 to 5.",lim:"You have reached today’s decision limit for your plan. Come back tomorrow or upgrade.",saved:"Saved to your dashboard.",best:"Your best pick",why:"Why this fits you",alts:"Other options considered",score:"match",wp:"It costs ৳{p}, within your budget.",wo:"It costs ৳{p}, which is over your budget.",wn:"It costs ৳{p}.",wr:"Its rating of {r}/5 supports your focus on {f}.",f_price:"low price",f_balanced:"a balance of price and quality",f_quality:"quality",ob:"over budget",dash_t:"Your dashboard",prof_t:"Your profile",pname:"Your name",pbud:"Usual budget (৳)",save:"Save profile",ok:"Saved.",today:"Decisions today",hist:"Recent decisions",none:"Nothing yet.",clr:"Delete my data",sure:"Tap again to confirm",priv:"Without an account, everything stays in this browser. If you log in, your profile and decisions are stored with your account.",pl_t:"Plans",pl_s:"Start free. Upgrade when you need more.",f_t:"Free",f1:"5 decisions a day",f2:"Quick personalized pick",pr1:"15 decisions a day",pm1:"25 decisions a day",xp1:"Unlimited decisions and Serious Mode",lp:"Life Partner / Deep Match",ab_t:"About Clario",ab_p:"Clario helps you choose with less confusion. You add your options, we score them against your budget and priorities, and you make the final call. Expert review is planned for paid plans.",help_t:"Help",q1:"Is Clario really free?",a1:"Yes. The free plan gives 5 decisions a day and needs no sign-up.",q2:"How is the pick chosen?",a2:"Each option is scored from its price against your budget and its rating, weighted by what matters most to you.",q3:"Where is my data?",a3:"Only in your browser. You can delete it from the dashboard.",lg:"Privacy and terms",lg_p:"[LEGAL TEXT] — to be added after lawyer review.",ct:"Contact:",tag:"Clarity for Every Choice."},
+bn:{n_acct:"অ্যাকাউন্ট",email:"ইমেইল",pass:"পাসওয়ার্ড",login:"লগ ইন",signup:"সাইন আপ",forgot:"পাসওয়ার্ড ভুলে গেছেন?",logout:"লগ আউট",newp:"নতুন পাসওয়ার্ড",nobk:"ব্যাকএন্ড এখনও যুক্ত নয়। Supabase যুক্ত করতে README.md দেখুন।",who:"লগ ইন করা আছে:",plan:"প্ল্যান",up_t:"প্ল্যান আপগ্রেড করুন",up_login:"আপগ্রেড করতে লগ ইন করুন।",meth:"পেমেন্ট পদ্ধতি",trx:"ট্রানজ্যাকশন আইডি",up_go:"অনুমোদনের জন্য পাঠান",bill:"বিলিং",paynote:"{w} নম্বরে টাকা পাঠিয়ে ট্রানজ্যাকশন আইডি দিন। [SUPPORT HOURS]-এর মধ্যে অনুমোদন হবে।",sent:"পাঠানো হয়েছে। অবস্থা ড্যাশবোর্ডে দেখুন।",chk:"অ্যাকাউন্ট নিশ্চিত করতে ইমেইল দেখুন।",rst:"পাসওয়ার্ড রিসেট ইমেইল পাঠানো হয়েছে।",pdone:"পাসওয়ার্ড বদলানো হয়েছে।",mypay:"আপনার পেমেন্ট অনুরোধ",n_home:"হোম",n_dec:"সিদ্ধান্ত",n_dash:"ড্যাশবোর্ড",n_plans:"প্ল্যান",n_about:"পরিচিতি",h1:"প্রতিটি সিদ্ধান্তে স্পষ্টতা।",hsub:"ব্যক্তিগত বিশ্লেষণের সাথে আপনার বিকল্পগুলো তুলনা করুন। কম দ্বিধা, বেশি আত্মবিশ্বাস।",cta:"সিদ্ধান্ত শুরু করুন",how_t:"কীভাবে কাজ করে",how_s:"দ্বিধা থেকে আত্মবিশ্বাসে তিনটি সহজ ধাপ।",s1_t:"কী জরুরি তা জানান",s1_p:"আপনার বাজেট এবং সবচেয়ে গুরুত্বপূর্ণ বিষয়।",s2_t:"বিকল্পগুলো যোগ করুন",s2_p:"যে দুই থেকে চারটির মধ্যে বেছে নেবেন।",s3_t:"আত্মবিশ্বাসে বেছে নিন",s3_p:"একটি স্পষ্ট পছন্দ পান, সাথে কেন এটি মানায়।",cat_t:"সিদ্ধান্তের ক্যাটাগরি",cat_s:"ছোট-বড় সব পছন্দে সাহায্য।",c1_t:"টেক ও গ্যাজেট",c1_p:"ফোন, ল্যাপটপ এবং আরও।",c2_t:"দৈনন্দিন কেনাকাটা ও ফ্যাশন",c2_p:"বাজারের জিনিস থেকে পোশাক পর্যন্ত।",c3_t:"জীবন ও সম্পর্ক",c3_p:"চিন্তাশীল ও গোপনীয় পরামর্শ।",soon:"শীঘ্রই আসছে",dec_t:"সিদ্ধান্ত নিন",try_s:"দুই থেকে চারটি বিকল্প দিন। সাইন-আপ লাগবে না।",budget:"আপনার বাজেট (৳)",prio:"কোনটি সবচেয়ে জরুরি?",p_price:"কম দাম",p_bal:"সমতা",p_qual:"সেরা মান",name:"বিকল্পের নাম",price:"দাম (৳)",rate:"রেটিং (১–৫)",go:"আমার জন্য সেরাটি বেছে দিন",need:"অন্তত দুটি বিকল্পের নাম, দাম এবং ১ থেকে ৫ রেটিং দিন।",lim:"আজকের সিদ্ধান্তের সীমা শেষ। আগামীকাল আবার আসুন বা আপগ্রেড করুন।",saved:"আপনার ড্যাশবোর্ডে সংরক্ষিত হয়েছে।",best:"আপনার সেরা পছন্দ",why:"কেন এটি আপনার জন্য মানানসই",alts:"বিবেচিত অন্যান্য বিকল্প",score:"মিল",wp:"এর দাম ৳{p}, যা আপনার বাজেটের মধ্যে।",wo:"এর দাম ৳{p}, যা আপনার বাজেটের চেয়ে বেশি।",wn:"এর দাম ৳{p}।",wr:"{r}/৫ রেটিং আপনার {f} গুরুত্বের সাথে মেলে।",f_price:"কম দামের",f_balanced:"দাম ও মানের সমতার",f_quality:"মানের",ob:"বাজেটের বেশি",dash_t:"আপনার ড্যাশবোর্ড",prof_t:"আপনার প্রোফাইল",pname:"আপনার নাম",pbud:"স্বাভাবিক বাজেট (৳)",save:"প্রোফাইল সংরক্ষণ",ok:"সংরক্ষিত।",today:"আজকের সিদ্ধান্ত",hist:"সাম্প্রতিক সিদ্ধান্ত",none:"এখনও কিছু নেই।",clr:"আমার তথ্য মুছুন",sure:"নিশ্চিত করতে আবার চাপুন",priv:"অ্যাকাউন্ট ছাড়া সবকিছু এই ব্রাউজারেই থাকে। লগ ইন করলে আপনার প্রোফাইল ও সিদ্ধান্ত আপনার অ্যাকাউন্টে জমা থাকে।",pl_t:"প্ল্যান",pl_s:"ফ্রিতে শুরু করুন। প্রয়োজনে আপগ্রেড করুন।",f_t:"ফ্রি",f1:"দিনে ৫টি সিদ্ধান্ত",f2:"দ্রুত ব্যক্তিগত পছন্দ",pr1:"দিনে ১৫টি সিদ্ধান্ত",pm1:"দিনে ২৫টি সিদ্ধান্ত",xp1:"সীমাহীন সিদ্ধান্ত ও সিরিয়াস মোড",lp:"লাইফ পার্টনার / ডিপ ম্যাচ",ab_t:"ক্লারিও সম্পর্কে",ab_p:"ক্লারিও আপনাকে কম দ্বিধায় বেছে নিতে সাহায্য করে। আপনি বিকল্প দেন, আমরা আপনার বাজেট ও অগ্রাধিকার অনুযায়ী স্কোর করি, চূড়ান্ত সিদ্ধান্ত আপনার। বিশেষজ্ঞ রিভিউ পেইড প্ল্যানে আসছে।",help_t:"সহায়তা",q1:"ক্লারিও কি সত্যিই ফ্রি?",a1:"হ্যাঁ। ফ্রি প্ল্যানে দিনে ৫টি সিদ্ধান্ত মেলে, সাইন-আপ লাগে না।",q2:"সেরাটি কীভাবে বাছা হয়?",a2:"প্রতিটি বিকল্পের দাম (আপনার বাজেটের সাপেক্ষে) ও রেটিং থেকে স্কোর হয়, আপনার অগ্রাধিকার অনুযায়ী ওজন দিয়ে।",q3:"আমার তথ্য কোথায়?",a3:"শুধু আপনার ব্রাউজারে। ড্যাশবোর্ড থেকে মুছে ফেলা যায়।",lg:"গোপনীয়তা ও শর্তাবলী",lg_p:"[LEGAL TEXT] — আইনজীবীর পর্যালোচনার পর যোগ হবে।",ct:"যোগাযোগ:",tag:"প্রতিটি সিদ্ধান্তে স্পষ্টতা।"}};
+var lang="en",P={},H=[];
+function $(i){return document.getElementById(i)}
+function ld(k,d){try{var v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function t(k){return (D[lang]&&D[lang][k])||D.en[k]||k}
+function fill(s,o){return s.replace(/\{(\w+)\}/g,function(m,k){return o[k]})}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function today(){return new Date().toLocaleDateString("en-CA")}
+function cnt(){return H.filter(function(h){return h.d===today()}).length}
+lang=ld("cl_l","en");P=ld("cl_p",{});H=ld("cl_h",[]);if(!Array.isArray(H))H=[];
+var rh="";for(var i=0;i<4;i++)rh+='<div class="row"><div><label for="n'+i+'" data-i="name"></label><input type="text" id="n'+i+'" autocomplete="off"></div><div><label for="p'+i+'" data-i="price"></label><input type="number" id="p'+i+'" inputmode="numeric" min="0"></div><div><label for="r'+i+'" data-i="rate"></label><input type="number" id="r'+i+'" inputmode="decimal" min="1" max="5" step="0.5"></div></div>';
+$("rows").innerHTML=rh;
+function dashLocal(){
+  $("pn").value=P.n||"";$("pb").value=P.b||"";$("pp").value=P.p||"balanced";
+  $("cnt").textContent=t("today")+": "+cnt()+" / 5";
+  $("hl").innerHTML=H.length?H.slice(-8).reverse().map(function(h){return "<li>"+esc(h.n)+" — "+h.s+"% "+t("score")+" · "+esc(h.d)+"</li>"}).join(""):"<li>"+t("none")+"</li>";
+}
+function apply(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-i]").forEach(function(e){e.textContent=t(e.getAttribute("data-i"))});
+  $("lang").textContent=lang==="en"?"বাংলা":"English";
+  $("out").innerHTML="";$("err").textContent="";$("pm").textContent="";
+  dash();
+}
+function go(id){
+  if(!$("p-"+id))id="home";
+  document.querySelectorAll(".pg").forEach(function(e){e.hidden=e.id!=="p-"+id});
+  document.querySelectorAll(".lk").forEach(function(b){b.setAttribute("aria-current",b.getAttribute("data-go")===id?"page":"false")});
+  if(id==="decide"){if(!$("budget").value&&P.b)$("budget").value=P.b;var r=document.querySelector('input[name=prio][value='+(P.p||"balanced")+']');if(r)r.checked=true}
+  if(id==="dash")dash();if(id==="plans")pl();if(id==="admin")adm();if(id==="acct")ui();
+  window.scrollTo(0,0);
+}
+document.addEventListener("click",function(e){var b=e.target.closest("[data-go]");if(b)go(b.getAttribute("data-go"));var a=e.target.closest("[data-act]");if(a)act(sb.rpc("review_payment",{p_id:a.getAttribute("data-id"),p_ok:a.getAttribute("data-act")==="ok",p_reason:$("ar").value}))});
+$("lang").onclick=function(){lang=lang==="en"?"bn":"en";sv("cl_l",lang);apply()};
+$("go").onclick=function(){
+  var err=$("err"),out=$("out");err.textContent="";out.innerHTML="";
+  if(!U&&cnt()>=lim()){err.textContent=t("lim");return}
+  var budget=parseFloat($("budget").value)||0,prio=document.querySelector('input[name="prio"]:checked').value;
+  var w={price:[.6,.4],quality:[.3,.7],balanced:[.5,.5]}[prio],o=[];
+  for(var i=0;i<4;i++){var n=$("n"+i).value.trim(),p=parseFloat($("p"+i).value),r=parseFloat($("r"+i).value);if(n&&p>=0&&r>=1&&r<=5)o.push({n:n,p:p,r:r})}
+  if(o.length<2){err.textContent=t("need");return}
+  var mx=Math.max.apply(null,o.map(function(x){return x.p}))||1;
+  o.forEach(function(x){var ps=budget>0?Math.max(0,1-x.p/budget):1-(x.p/mx)*.8;x.over=budget>0&&x.p>budget;x.s=Math.max(0,Math.min(1,w[0]*ps+w[1]*(x.r/5)-(x.over?.4:0)))});
+  o.sort(function(a,b){return b.s-a.s});
+  var b=o[0],pf=Math.round(b.p).toLocaleString(lang==="bn"?"bn-BD":"en-US"),sc=Math.round(b.s*100);
+  var why="<li>"+fill(t(budget>0?(b.over?"wo":"wp"):"wn"),{p:pf})+"</li><li>"+fill(t("wr"),{r:b.r,f:t("f_"+prio)})+"</li>";
+  var alts=o.slice(1).map(function(x){return "<li>"+esc(x.n)+" — "+Math.round(x.s*100)+"% "+t("score")+(x.over?" ("+t("ob")+")":"")+"</li>"}).join("");
+  out.innerHTML='<div class="win"><div>'+t("best")+'</div><h3 style="font-size:24px;margin:2px 0">'+esc(b.n)+" · "+sc+"% "+t("score")+'</h3><h3 style="margin-top:14px">'+t("why")+'</h3><ul>'+why+'</ul><h3 style="margin-top:14px">'+t("alts")+'</h3><ul>'+alts+'</ul><p style="margin:12px 0 0;color:var(--teal)">'+t("saved")+'</p></div>';
+  if(U)sb.rpc("save_decision",{p_best:b.n,p_score:sc}).then(function(x){if(x.error){out.innerHTML="";err.textContent=/limit/i.test(x.error.message)?t("lim"):x.error.message}else dash()});else{H.push({d:today(),n:b.n,s:sc});if(H.length>50)H=H.slice(-50);sv("cl_h",H)}
+};
+$("sp").onclick=function(){P={n:$("pn").value.trim(),b:parseFloat($("pb").value)||0,p:$("pp").value};if(U)sb.from("profiles").update({name:P.n,budget:P.b,priority:P.p}).eq("id",U.id).then(function(x){$("pm").textContent=x.error?x.error.message:t("ok")});else{sv("cl_p",P);$("pm").textContent=t("ok")}};
+var ck=0;
+$("cl").onclick=function(){
+  if(!ck){ck=1;$("cl").textContent=t("sure");setTimeout(function(){ck=0;$("cl").textContent=t("clr")},4000);return}
+  ck=0;$("cl").textContent=t("clr");
+  if(U){sb.from("decisions").delete().eq("user_id",U.id).then(dash);return}
+  try{localStorage.removeItem("cl_p");localStorage.removeItem("cl_h")}catch(e){}
+  P={};H=[];dash();
+};
+var sb=null,U=null,PR=null,LIM={free:5,pro:15,premium:25,extra_premium:1e9};
+try{if(window.supabase&&window.CLARIO&&CLARIO.url&&CLARIO.url.indexOf("YOUR")<0)sb=supabase.createClient(CLARIO.url,CLARIO.key)}catch(e){}
+function lim(){return PR?(PR.role==="owner"?1e9:LIM[PR.plan]||5):5}
+function am(m,ok){var e=$("am");e.textContent=m||"";e.style.color=ok?"var(--teal)":"var(--er)"}
+function ui(){
+  $("nb").hidden=!!sb;$("lo").hidden=!sb||!!U;$("li").hidden=!U;
+  if(U)$("who").textContent=t("who")+" "+U.email+" · "+t("plan")+": "+(PR?(PR.role==="owner"?"owner":PR.plan):"…");
+  $("adm").hidden=!(PR&&PR.role==="owner");
+}
+function sync(){
+  if(!sb)return Promise.resolve();
+  return sb.auth.getSession().then(function(r){
+    U=r.data.session?r.data.session.user:null;PR=null;
+    if(!U)return;
+    return sb.from("profiles").select("*").eq("id",U.id).single().then(function(p){PR=p.data;if(PR)P={n:PR.name,b:PR.budget,p:PR.priority}});
+  }).then(function(){ui();dash();pl()});
+}
+function dash(){
+  dashLocal();
+  if(!U){$("mp").innerHTML="";return}
+  var L=lim(),ls=L>1e6?"∞":L;
+  sb.from("decisions").select("best,score,created_at").order("created_at",{ascending:false}).limit(8).then(function(r){var a=r.data||[];$("hl").innerHTML=a.length?a.map(function(h){return "<li>"+esc(h.best)+" — "+h.score+"% "+t("score")+" · "+esc(h.created_at.slice(0,10))+"</li>"}).join(""):"<li>"+t("none")+"</li>"});
+  sb.from("usage").select("day,n").order("day",{ascending:false}).limit(1).then(function(r){var u=(r.data||[])[0],n=u&&u.day===new Date().toISOString().slice(0,10)?u.n:0;$("cnt").textContent=t("today")+": "+n+" / "+ls});
+  sb.from("payments").select("plan,status").order("created_at",{ascending:false}).limit(5).then(function(r){$("mp").innerHTML=(r.data||[]).map(function(p){return "<li>"+esc(p.plan)+" — "+esc(p.status)+"</li>"}).join("")});
+}
+function pl(){
+  $("up").hidden=!U;$("upl").hidden=!!U||!sb;
+  $("upn").textContent=fill(t("paynote"),{w:(window.CLARIO&&CLARIO.wallet)||"[WALLET NUMBER]"});
+  if(!sb)return;
+  sb.from("prices").select("*").then(function(r){var m={};(r.data||[]).forEach(function(x){(m[x.plan]=m[x.plan]||[]).push(x.period+" ৳"+x.price)});["pro","premium","extra_premium"].forEach(function(k){if(m[k])$("pr-"+k).textContent=m[k].join(" · ")})});
+}
+function cred(){return {email:$("em").value.trim(),password:$("pw").value}}
+$("bl").onclick=function(){am("");sb.auth.signInWithPassword(cred()).then(function(r){if(r.error)am(r.error.message);else sync().then(function(){go("dash")})})};
+$("bs").onclick=function(){am("");var c=cred();sb.auth.signUp({email:c.email,password:c.password,options:{emailRedirectTo:location.href.split("#")[0]}}).then(function(r){if(r.error)am(r.error.message);else am(t("chk"),1)})};
+$("bf").onclick=function(){am("");sb.auth.resetPasswordForEmail($("em").value.trim(),{redirectTo:location.href.split("#")[0]}).then(function(r){if(r.error)am(r.error.message);else am(t("rst"),1)})};
+$("bo").onclick=function(){sb.auth.signOut().then(function(){U=null;PR=null;P=ld("cl_p",{});ui();dash();pl()})};
+$("bn").onclick=function(){sb.auth.updateUser({password:$("np").value}).then(function(r){if(r.error)am(r.error.message);else{$("rp").hidden=true;am(t("pdone"),1)}})};
+if(sb)sb.auth.onAuthStateChange(function(ev){if(ev==="PASSWORD_RECOVERY"){$("rp").hidden=false;go("acct")}});
+$("upb").onclick=function(){
+  var tx=$("upt").value.trim();if(!tx){$("ups").textContent=t("trx")+"?";return}
+  sb.from("payments").insert({user_id:U.id,plan:$("upp").value,period:$("upd").value,method:$("upm").value,trx_id:tx}).then(function(r){$("ups").textContent=r.error?r.error.message:t("sent");if(!r.error){$("upt").value="";dash()}});
+};
+$("xp").innerHTML=$("upp").innerHTML;$("xd").innerHTML=$("upd").innerHTML;
+function act(p){$("ae").textContent="";p.then(function(r){if(r.error)$("ae").textContent=r.error.message;adm()})}
+$("xs").onclick=function(){act(sb.rpc("set_price",{p_plan:$("xp").value,p_period:$("xd").value,p_price:parseFloat($("xv").value)||0,p_reason:$("ar").value}))};
+document.addEventListener("change",function(e){var s=e.target;if(s.getAttribute&&s.getAttribute("data-uid"))act(sb.rpc("set_plan",{p_user:s.getAttribute("data-uid"),p_plan:s.value,p_reason:$("ar").value}))});
+function adm(){
+  if(!PR||PR.role!=="owner"){go("home");return}
+  sb.from("payments").select("id,plan,period,method,trx_id,profiles(email)").eq("status","pending").order("created_at").then(function(r){var a=r.data||[];$("ap").innerHTML=a.length?a.map(function(p){return '<div class="row" style="align-items:center"><div>'+esc((p.profiles||{}).email||"")+" · "+esc(p.plan)+" "+esc(p.period)+" · "+esc(p.method)+" "+esc(p.trx_id)+'</div><button class="btn" type="button" data-act="ok" data-id="'+esc(p.id)+'">Approve</button><button class="btn s" type="button" data-act="no" data-id="'+esc(p.id)+'">Reject</button></div>'}).join(""):"<p>None.</p>"});
+  sb.from("profiles").select("id,email,plan,role").order("created_at",{ascending:false}).limit(50).then(function(r){$("au").innerHTML=(r.data||[]).map(function(u){return '<div class="row" style="align-items:center"><div>'+esc(u.email||"")+(u.role==="owner"?" (owner)":"")+'</div><select data-uid="'+esc(u.id)+'">'+["free","pro","premium","extra_premium"].map(function(k){return "<option"+(k===u.plan?" selected":"")+">"+k+"</option>"}).join("")+"</select></div>"}).join("")});
+  sb.from("audit_log").select("action,reason,created_at").order("created_at",{ascending:false}).limit(20).then(function(r){$("aa").innerHTML=(r.data||[]).map(function(a){return "<li>"+esc(a.created_at.slice(0,16))+" · "+esc(a.action)+" — "+esc(a.reason)+"</li>"}).join("")});
+}
+apply();
+go((location.hash||"").slice(1)||"home");
+sync();
+</script>
+</body>
+</html>
