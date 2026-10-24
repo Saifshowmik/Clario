@@ -22,6 +22,8 @@ jobs:
           node --check public/profile-studio.js
           node --check public/social-studio.js
           grep -q 'profile-display-name' public/profile-studio.js
+          grep -q 'create policy "Profile media owner read"' supabase/migrations/202610240006_private_profile_media.sql
+          grep -q 'public=false' supabase/migrations/202610240006_private_profile_media.sql
           grep -q 'display_name' public/profile-studio.js
           grep -q 'char_length(coalesce(new.display_name' supabase/migrations/202610240005_profile_display_name.sql
       - name: Verify Deep Think is wired into the app
