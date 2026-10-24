@@ -24,3 +24,25 @@ insert into public.profiles(id, role) values
  ('10000000-0000-4000-8000-000000000003','user');
 
 grant select, update on public.profiles to authenticated;
+
+-- Minimal storage schema fixture for testing private profile-media policies.
+create schema storage;
+create table storage.buckets (
+  id text primary key,
+  name text not null,
+  public boolean not null default false,
+  file_size_limit bigint,
+  allowed_mime_types text[]
+);
+create table storage.objects (
+  id bigint generated always as identity primary key,
+  bucket_id text not null,
+  name text not null
+);
+grant usage on schema storage to authenticated;
+grant select, insert, update, delete on storage.objects to authenticated;
+create or replace function storage.foldername(name text)
+returns text[] language sql immutable as $$
+  select string_to_array(name, '/')[1:greatest(array_length(string_to_array(name, '/'),1)-1,0)];
+$$;
+grant execute on function storage.foldername(text) to authenticated;
