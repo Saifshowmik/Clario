@@ -117,3 +117,18 @@ begin
     raise exception 'Post report did not retain server-derived author and post ID';
   end if;
 end $$;
+
+-- Regular users must not read the moderation queue.
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000003',false);
+set role authenticated;
+do $$
+begin
+  begin
+    perform * from public.list_social_reports();
+    raise exception 'Regular user unexpectedly read moderation queue';
+  exception when others then
+    if sqlerrm='Regular user unexpectedly read moderation queue' then raise; end if;
+    if position('Owner access required' in sqlerrm)=0 then raise; end if;
+  end;
+end $$;
+reset role;
