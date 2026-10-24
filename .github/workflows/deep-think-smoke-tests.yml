@@ -31,6 +31,13 @@ jobs:
           grep -q '<script src="mind-studio.js"></script>' public/index.html
           grep -q 'enable row level security' supabase/migrations/202610240012_clario_mind.sql
           grep -q 'p_age_band<>' supabase/migrations/202610240012_clario_mind.sql
+          grep -q 'crisisTitle:' public/mind-studio.js
+          grep -q 'href:"tel:999"' public/mind-studio.js
+          grep -q 'href:"tel:1098"' public/mind-studio.js
+          grep -q 'https://www.police.gov.bd/en/hot_line_number' public/mind-studio.js
+          grep -q 'https://msw.gov.bd/pages/static-pages/694032e235ce18e1c0563e15' public/mind-studio.js
+          grep -q 'bn:{title:' public/mind-studio.js
+          grep -q 'hi:{title:' public/mind-studio.js
           grep -q 'expires_at' supabase/migrations/202610240012_clario_mind.sql
           grep -q 'clario_deliver_streak_rewards' public/streak-studio.js
           grep -q 'plan_entitlement_grants' supabase/migrations/202610240011_streak_entitlements.sql
