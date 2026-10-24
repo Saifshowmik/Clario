@@ -1,0 +1,23 @@
+-- Test-only Supabase auth/profile fixture for CI. Never used by production.
+create role anon nologin;
+create role authenticated nologin;
+create schema auth;
+create table auth.users (id uuid primary key);
+create table public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  role text not null default 'user' check (role in ('user','owner'))
+);
+create or replace function auth.uid()
+returns uuid language sql stable as $$
+  select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
+$$;
+grant usage on schema auth to anon, authenticated;
+grant execute on function auth.uid() to anon, authenticated;
+insert into auth.users(id) values
+ ('10000000-0000-4000-8000-000000000001'),
+ ('10000000-0000-4000-8000-000000000002'),
+ ('10000000-0000-4000-8000-000000000003');
+insert into public.profiles(id, role) values
+ ('10000000-0000-4000-8000-000000000001','user'),
+ ('10000000-0000-4000-8000-000000000002','owner'),
+ ('10000000-0000-4000-8000-000000000003','user');
