@@ -61,7 +61,7 @@
     section.appendChild(mine);
     var admin = el("div", { className: "panel", id: "dt-admin", hidden: "" });
     admin.appendChild(el("h3", {}, "Human review queue"));
-    admin.appendChild(el("p", { className: "sub" }, "Restricted to authorized admin/owner accounts. Review the user's original submission; do not use AI tools for this workflow."));
+    admin.appendChild(el("p", { className: "sub" }, "Restricted to the owner account. Review the user's original submission; do not use AI tools for this workflow."));
     admin.appendChild(el("div", { id: "dt-queue" }));
     section.appendChild(admin);
     page.appendChild(section); main.appendChild(page);
@@ -123,7 +123,7 @@
         mine.appendChild(card);
       });
     });
-    var allowed = r && (r.role === "owner" || r.role === "admin");
+    var allowed = r && r.role === "owner";
     admin.hidden = !allowed;
     if (allowed) {
       client.from("deep_think_cases").select("id,user_id,title,background,goals,options_text,constraints_text,risks,additional_text,status,created_at,final_decision").order("created_at", { ascending: true }).then(function (res) {
