@@ -19,7 +19,7 @@ This feature handles private life-context submissions. Do not release it based o
 
 ## Staging procedure
 1. Create/use a separate Supabase staging project. Do not apply this migration to production as a test.
-2. Review the migration against the actual staging schema, especially `profiles.id` and the role values (`admin`, `owner`).
+2. Review the migration against the actual staging schema, especially `profiles.id` and the existing owner-only role value (`owner`).
 3. Apply `supabase/migrations/202610240001_deep_think.sql` to staging.
 4. Deploy the feature branch to an isolated preview environment; do not merge to `main` for this test.
 5. Create separate test accounts for a normal user, an admin, an owner and an unrelated user.
@@ -35,7 +35,7 @@ GitHub Pages publishes static frontend files only. The SQL migration is not auto
 - [x] Source inspection: Deep Think entry button exists and the module is loaded by the main HTML.
 - [x] Source inspection: frontend references the submit and review RPCs.
 - [x] Source inspection: no explicit AI provider/client invocation or `fetch()` appears in the Deep Think module.
-- [x] Source inspection: cases table has RLS enabled and reviewer RPC enforces admin/owner role.
+- [x] Source inspection: cases table has RLS enabled and reviewer RPC enforces the existing owner role.
 - [x] Source inspection: client column-level select grant excludes `internal_note`.
 - [x] Source inspection: submission and review event inserts exist.
 - [x] Source inspection: smoke-test workflow includes JavaScript syntax check and security assertions.
@@ -44,3 +44,7 @@ GitHub Pages publishes static frontend files only. The SQL migration is not auto
 - [ ] **Not yet executed:** migration on staging Supabase, real browser tests, and role-based live tests.
 
 These source checks validate the presence of intended safeguards only. They do not establish runtime correctness or prove that the complete application has no other path that processes Deep Think content with AI.
+
+- [x] Corrected SQL function terminators in both PL/pgSQL functions.
+- [x] Aligned reviewer authorization with the existing `profiles.role` constraint (`user` or `owner`).
+- [x] Aligned the GitHub Actions role assertion with owner-only authorization.
