@@ -181,15 +181,11 @@
     var ctx = clientAndUser(), name = (raw || "").trim().replace(/^@/, "").toLowerCase();
     if (!ctx.client || !ctx.user) { status("social-safety-status", "Sign in to use safety controls.", false); return Promise.reject(new Error("Sign in required")); }
     if (!/^[a-z0-9_]{3,24}$/.test(name)) { status("social-safety-status", "Enter a valid username.", false); return Promise.reject(new Error("Invalid username")); }
-    return ctx.client.rpc("resolve_social_username", { p_username: name }).then(function (res) {
-      if (res.error || !res.data) throw new Error("No available member found.");
-      if (res.data === ctx.user.id) throw new Error("You cannot apply this action to yourself.");
-      return { ctx: ctx, target: res.data };
-    });
+    return Promise.resolve({ ctx: ctx, name: name });
   }
   function blockMember(raw) {
     resolveUsername(raw).then(function (v) {
-      return v.ctx.client.from("social_blocks").upsert({ blocker_id: v.ctx.user.id, blocked_id: v.target });
+      return v.ctx.client.rpc("block_social_member", { p_username: v.name });
     }).then(function (res) {
       if (res && res.error) throw new Error(res.error.message);
       status("social-safety-status", "Member blocked. Their content will be hidden where block policies apply.", true); loadFeed();
@@ -197,7 +193,7 @@
   }
   function muteMember(raw) {
     resolveUsername(raw).then(function (v) {
-      return v.ctx.client.from("social_mutes").upsert({ muter_id: v.ctx.user.id, muted_id: v.target });
+      return v.ctx.client.rpc("mute_social_member", { p_username: v.name });
     }).then(function (res) {
       if (res && res.error) throw new Error(res.error.message);
       status("social-safety-status", "Member muted. Feed filtering is being applied.", true); loadFeed();
@@ -206,10 +202,13 @@
   function submitReport() {
     var ctx = clientAndUser(), raw = document.getElementById("social-safety-username").value;
     resolveUsername(raw).then(function (v) {
-      return v.ctx.client.from("social_reports").insert({
-        reporter_id: v.ctx.user.id, reported_user_id: v.target,
-        reason: document.getElementById("social-report-reason").value,
-        details: document.getElementById("social-report-details").value.trim()
+      return v.ctx.client.rpc("resolve_social_username", { p_username: v.name }).then(function (lookup) {
+        if (lookup.error || !lookup.data) throw new Error("No available member found.");
+        return v.ctx.client.from("social_reports").insert({
+          reporter_id: v.ctx.user.id, reported_user_id: lookup.data,
+          reason: document.getElementById("social-report-reason").value,
+          details: document.getElementById("social-report-details").value.trim()
+        });
       });
     }).then(function (res) {
       if (res && res.error) throw new Error(res.error.message);
