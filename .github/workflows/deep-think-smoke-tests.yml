@@ -27,7 +27,7 @@ jobs:
       - name: Verify database authorization safeguards
         run: |
           grep -q 'enable row level security' supabase/migrations/202610240001_deep_think.sql
-          grep -q "p.role in ('admin','owner')" supabase/migrations/202610240001_deep_think.sql
+          grep -q "p.role = 'owner'" supabase/migrations/202610240001_deep_think.sql
           grep -q 'Admin/owner access required' supabase/migrations/202610240001_deep_think.sql
           grep -q 'internal_note' supabase/migrations/202610240001_deep_think.sql
           grep -q 'deep_think_case_events' supabase/migrations/202610240001_deep_think.sql
