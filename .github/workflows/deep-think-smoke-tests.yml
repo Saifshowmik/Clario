@@ -50,8 +50,8 @@ jobs:
           grep -q '<script src="streak-studio.js"></script>' public/index.html
           grep -q "at time zone 'Asia/Dhaka'" supabase/migrations/202610240010_streak_rewards.sql
           grep -q 'completed_decisions integer not null' supabase/migrations/202610240010_streak_rewards.sql
-          grep -q 'v_current=60' supabase/migrations/202610240010_streak_rewards.sql
-          grep -q 'v_current%365=0' supabase/migrations/202610240010_streak_rewards.sql
+          grep -q 'v_current>=60' supabase/migrations/202610240010_streak_rewards.sql
+          grep -q 'for v_milestone in 365..v_current by 365 loop' supabase/migrations/202610240010_streak_rewards.sql
           grep -q 'using (user_id=auth.uid())' supabase/migrations/202610240008_travel_planner.sql
           grep -q "values ('social-media','social-media',false,8388608" supabase/migrations/202610240007_social_media.sql
           grep -q "allowed_mime_types=array\['image/jpeg','image/png','image/webp'\]" supabase/migrations/202610240007_social_media.sql
