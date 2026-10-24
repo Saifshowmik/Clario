@@ -2,6 +2,7 @@
 \set ON_ERROR_STOP on
 begin;
 set local request.jwt.claim.sub = '10000000-0000-4000-8000-000000000001';
+set local role authenticated;
 select public.submit_deep_think_case(
   'Should I accept the new role?',
   'Current job is stable',
@@ -11,7 +12,8 @@ select public.submit_deep_think_case(
   'Relocation risk',
   'CI integration test'
 );
-do $$
+reset role;
+do $
 declare v_case_id uuid;
 begin
   select id into v_case_id from public.deep_think_cases
