@@ -24,6 +24,9 @@ jobs:
           node --check public/travel-studio.js
           node --check public/rewards-studio.js
           node --check public/streak-studio.js
+          grep -q 'clario_deliver_streak_rewards' public/streak-studio.js
+          grep -q 'plan_entitlement_grants' supabase/migrations/202610240011_streak_entitlements.sql
+          grep -q 'clario_effective_plan' supabase/migrations/202610240011_streak_entitlements.sql
           grep -q 'SOCIAL_MEDIA_MAX_BYTES = 8 \* 1024 \* 1024' public/social-studio.js
           grep -q 'function validateSocialImage' public/social-studio.js
           grep -q 'function loadStories' public/social-studio.js
