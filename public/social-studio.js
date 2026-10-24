@@ -16,7 +16,7 @@
     var page = el("div", { id: "p-social", className: "pg", hidden: "" });
     var section = el("section");
     section.appendChild(el("h2", {}, "Clario Social"));
-    section.appendChild(el("p", { className: "sub" }, "Share text updates with the audience you choose. Access is enforced by database row-level security; private media uploads are not enabled yet."));
+    section.appendChild(el("p", { className: "sub" }, "Share text updates with the audience you choose. Access is enforced by database row-level security. Profile photo and cover uploads are private; post and story media are not enabled yet."));
     var composer = el("div", { className: "panel" });
     composer.appendChild(el("h3", {}, "Create a post"));
     var label = el("label", { for: "social-caption" }, "What would you like to share?");
