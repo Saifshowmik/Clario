@@ -5,8 +5,8 @@ set local request.jwt.claim.sub = '10000000-0000-4000-8000-000000000001';
 set local role authenticated;
 select public.clario_mind_save_session('18_plus','en','saved','anxious',array['calm'],'test saved session') as saved_id \gset
 select public.clario_mind_save_session('18_plus','bn','temporary','okay',array['reflect'],'temporary session') as temporary_id \gset
--- A minor must be rejected by the server even if the client is bypassed.
-do $$ begin
+-- Minor sessions and temporary database persistence must both be rejected server-side.
+do $ begin
   begin
     perform public.clario_mind_save_session('16_17','en','saved','low',array[]::text[],'minor test');
     raise exception 'Minor session unexpectedly accepted';
@@ -14,7 +14,14 @@ do $$ begin
     if sqlerrm = 'Minor session unexpectedly accepted' then raise; end if;
     if position('minors are disabled' in sqlerrm)=0 then raise; end if;
   end;
-end $$;
+  begin
+    perform public.clario_mind_save_session('18_plus','en','temporary','okay',array[]::text[],'temporary test');
+    raise exception 'Temporary session unexpectedly stored';
+  exception when others then
+    if sqlerrm = 'Temporary session unexpectedly stored' then raise; end if;
+    if position('client-only' in sqlerrm)=0 then raise; end if;
+  end;
+end $;
 -- Saved history should only contain the saved record, never temporary records.
 select count(*) as saved_count from public.clario_mind_list_sessions() \gset
 \if :saved_count != 1
@@ -22,15 +29,15 @@ select count(*) as saved_count from public.clario_mind_list_sessions() \gset
   \quit 1
 \endif
 reset role;
--- Verify temporary record has expiry and saved record does not.
-do $$ begin
+-- Saved sessions do not have an expiry; temporary reflections never reach the database.
+do $ begin
  if not exists(select 1 from public.mind_sessions where user_id='10000000-0000-4000-8000-000000000001' and note='test saved session' and expires_at is null) then
    raise exception 'Saved session expiry must be null';
  end if;
- if not exists(select 1 from public.mind_sessions where user_id='10000000-0000-4000-8000-000000000001' and note='temporary session' and expires_at>now()) then
-   raise exception 'Temporary session must expire in the future';
+ if exists(select 1 from public.mind_sessions where user_id='10000000-0000-4000-8000-000000000001' and note='temporary test') then
+   raise exception 'Temporary reflection must not be persisted';
  end if;
-end $$;
+end $;
 -- Other user cannot list the first user's saved history.
 set local request.jwt.claim.sub = '10000000-0000-4000-8000-000000000003';
 set local role authenticated;
