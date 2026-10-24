@@ -23,6 +23,7 @@ jobs:
           node --check public/social-studio.js
           node --check public/travel-studio.js
           node --check public/rewards-studio.js
+          node --check public/streak-studio.js
           grep -q 'SOCIAL_MEDIA_MAX_BYTES = 8 \* 1024 \* 1024' public/social-studio.js
           grep -q 'function validateSocialImage' public/social-studio.js
           grep -q 'function loadStories' public/social-studio.js
@@ -43,6 +44,14 @@ jobs:
           grep -q 'clario_apply_referral' public/rewards-studio.js
           grep -q 'data-go="rewards"' public/index.html
           grep -q '<script src="rewards-studio.js"></script>' public/index.html
+          grep -q '202610240010_streak_rewards.sql' docs/SCREEN_IMPLEMENTATION_TRACKER.md
+          grep -q 'clario_refresh_streak' public/streak-studio.js
+          grep -q 'data-go="streaks"' public/index.html
+          grep -q '<script src="streak-studio.js"></script>' public/index.html
+          grep -q "at time zone 'Asia/Dhaka'" supabase/migrations/202610240010_streak_rewards.sql
+          grep -q 'completed_decisions integer not null' supabase/migrations/202610240010_streak_rewards.sql
+          grep -q 'v_current=60' supabase/migrations/202610240010_streak_rewards.sql
+          grep -q 'v_current%365=0' supabase/migrations/202610240010_streak_rewards.sql
           grep -q 'using (user_id=auth.uid())' supabase/migrations/202610240008_travel_planner.sql
           grep -q "values ('social-media','social-media',false,8388608" supabase/migrations/202610240007_social_media.sql
           grep -q "allowed_mime_types=array\['image/jpeg','image/png','image/webp'\]" supabase/migrations/202610240007_social_media.sql
