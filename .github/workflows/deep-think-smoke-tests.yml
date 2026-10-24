@@ -47,6 +47,8 @@ jobs:
           grep -q "new.role is distinct from old.role" supabase/migrations/202610240002_social_profile_foundation.sql
           grep -q "new.plan is distinct from old.plan" supabase/migrations/202610240002_social_profile_foundation.sql
           grep -q "profile_visibility" supabase/migrations/202610240002_social_profile_foundation.sql
+          grep -q "Self-promotion to owner unexpectedly succeeded" .github/scripts/test-social-profile-migration.sql
+          grep -q "Self-upgrade to paid plan unexpectedly succeeded" .github/scripts/test-social-profile-migration.sql
       - name: Verify screen tracker preserves all designs
         run: test "$(grep -Ec '^\| [0-9]+ \|' docs/SCREEN_IMPLEMENTATION_TRACKER.md)" -eq 135
 
