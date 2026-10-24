@@ -86,6 +86,15 @@
     safetyPanel.appendChild(safetyUsername); safetyPanel.appendChild(safetyButtons);
     safetyPanel.appendChild(reportReason); safetyPanel.appendChild(reportDetails); safetyPanel.appendChild(reportButton); safetyPanel.appendChild(safetyStatus);
     section.appendChild(safetyPanel);
+    var safetyListPanel = el("div", { className: "panel" });
+    safetyListPanel.appendChild(el("h3", {}, "Blocked and muted members"));
+    safetyListPanel.appendChild(el("p", { className: "sub" }, "Review your safety settings and undo them when needed. Member IDs are partially masked."));
+    var safetyListStatus = el("p", { id: "social-safety-list-status", role: "status", className: "sub" }, "");
+    var safetyList = el("div", { id: "social-safety-list" });
+    var safetyListRefresh = el("button", { type: "button", className: "btn s" }, "Refresh safety list");
+    safetyListRefresh.addEventListener("click", loadSafetyList);
+    safetyListPanel.appendChild(safetyListRefresh); safetyListPanel.appendChild(safetyListStatus); safetyListPanel.appendChild(safetyList);
+    section.appendChild(safetyListPanel);
     var moderationPanel = el("div", { className: "panel" });
     moderationPanel.appendChild(el("h3", {}, "Moderation queue (owners only)"));
     var moderationStatus = el("p", { id: "social-moderation-status", role: "status", className: "sub" }, "Owner access required.");
@@ -120,6 +129,8 @@
     loadFeed();
     loadStories();
     loadFollowRequests();
+    loadFollowing();
+    loadSafetyList();
   }
   function status(id, text, good) {
     var n = document.getElementById(id);
@@ -299,6 +310,43 @@
           row.appendChild(remove); list.appendChild(row);
         });
       });
+  }
+  function loadSafetyList() {
+    var ctx = clientAndUser(), list = document.getElementById("social-safety-list");
+    if (!list) return;
+    list.replaceChildren();
+    if (!ctx.client || !ctx.user) { status("social-safety-list-status", "Sign in to manage your safety list.", false); return; }
+    Promise.all([
+      ctx.client.from("social_blocks").select("blocked_id,created_at").eq("blocker_id", ctx.user.id).order("created_at", { ascending: false }).limit(100),
+      ctx.client.from("social_mutes").select("muted_id,created_at").eq("muter_id", ctx.user.id).order("created_at", { ascending: false }).limit(100)
+    ]).then(function (results) {
+      if (results[0].error || results[1].error) {
+        status("social-safety-list-status", "Safety list unavailable. Confirm social safety migrations are applied.", false);
+        return;
+      }
+      var entries = [];
+      (results[0].data || []).forEach(function (x) { entries.push({ kind: "block", id: x.blocked_id, created: x.created_at }); });
+      (results[1].data || []).forEach(function (x) { entries.push({ kind: "mute", id: x.muted_id, created: x.created_at }); });
+      if (!entries.length) { status("social-safety-list-status", "You have no blocked or muted members.", true); return; }
+      status("social-safety-list-status", entries.length + " safety setting(s).", true);
+      entries.forEach(function (entry) {
+        var row = el("div", { className: "panel", style: "margin:8px 0;padding:12px" });
+        row.appendChild(el("p", {}, (entry.kind === "block" ? "Blocked" : "Muted") + " member · " + entry.id.slice(0, 8) + "…"));
+        var undo = el("button", { type: "button", className: "btn s" }, entry.kind === "block" ? "Unblock" : "Unmute");
+        undo.addEventListener("click", function () {
+          if (!window.confirm("Remove this " + entry.kind + " setting?")) return;
+          var query = entry.kind === "block"
+            ? ctx.client.from("social_blocks").delete().eq("blocker_id", ctx.user.id).eq("blocked_id", entry.id)
+            : ctx.client.from("social_mutes").delete().eq("muter_id", ctx.user.id).eq("muted_id", entry.id);
+          query.then(function (done) {
+            if (done.error) { status("social-safety-list-status", "Could not update setting: " + done.error.message, false); return; }
+            loadSafetyList();
+          });
+        });
+        row.appendChild(undo);
+        list.appendChild(row);
+      });
+    }).catch(function () { status("social-safety-list-status", "Could not load safety settings. Please retry.", false); });
   }
   function requestFollow(rawUsername) {
     var ctx = clientAndUser(), name = (rawUsername || "").trim().replace(/^@/, "").toLowerCase();
