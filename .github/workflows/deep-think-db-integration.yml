@@ -83,6 +83,14 @@ jobs:
           PGPASSWORD: postgres
         run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-profile-media-migration.sql
 
+      - name: Apply private social media migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240007_social_media.sql
+      - name: Apply travel planner migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240008_travel_planner.sql
       - name: Apply Clario Mind migration to disposable database
         env:
           PGPASSWORD: postgres
