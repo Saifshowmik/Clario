@@ -39,3 +39,11 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-deep-think-migration.sql
+      - name: Apply social profile foundation migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240002_social_profile_foundation.sql
+      - name: Verify profile fields and privilege guard
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-social-profile-migration.sql
