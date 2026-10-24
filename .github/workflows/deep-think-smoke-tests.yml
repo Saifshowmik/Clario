@@ -21,6 +21,10 @@ jobs:
           node --check public/deep-think.js
           node --check public/profile-studio.js
           node --check public/social-studio.js
+          grep -q 'SOCIAL_MEDIA_MAX_BYTES = 8 \* 1024 \* 1024' public/social-studio.js
+          grep -q 'function validateSocialImage' public/social-studio.js
+          grep -q 'function loadStories' public/social-studio.js
+          grep -q '202610240007_social_media.sql' docs/SCREEN_IMPLEMENTATION_TRACKER.md
           grep -q 'profile-display-name' public/profile-studio.js
           grep -q 'create policy "Profile media owner read"' supabase/migrations/202610240006_private_profile_media.sql
           grep -q 'public=false' supabase/migrations/202610240006_private_profile_media.sql
