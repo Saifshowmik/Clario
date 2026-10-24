@@ -49,6 +49,32 @@ create table if not exists public.social_stories (
   created_at timestamptz not null default now()
 );
 
+-- Public profile discovery is explicit; private profiles remain visible only to self/owner and accepted followers.
+drop policy if exists profiles_social_read on public.profiles;
+create policy profiles_social_read on public.profiles for select to authenticated
+using (
+  id=auth.uid()
+  or profile_visibility='public'
+  or exists(select 1 from public.social_follows f where f.requester_id=auth.uid() and f.target_id=id and f.status='accepted')
+);
+
+create or replace function public.clario_guard_follow_identity()
+returns trigger language plpgsql security definer set search_path=public,pg_temp as $
+begin
+  if new.requester_id is distinct from old.requester_id or new.target_id is distinct from old.target_id then
+    raise exception 'Follow request participants cannot be changed';
+  end if;
+  if auth.uid() is not null and auth.uid() <> old.target_id then
+    raise exception 'Only the requested account can accept or reject a follow request';
+  end if;
+  return new;
+end $;
+revoke all on function public.clario_guard_follow_identity() from public;
+grant execute on function public.clario_guard_follow_identity() to authenticated;
+drop trigger if exists clario_guard_follow_identity on public.social_follows;
+create trigger clario_guard_follow_identity before update on public.social_follows
+for each row execute function public.clario_guard_follow_identity();
+
 create index if not exists social_posts_author_created_idx on public.social_posts(author_id,created_at desc);
 create index if not exists social_posts_feed_idx on public.social_posts(status,audience,created_at desc);
 create index if not exists social_comments_post_created_idx on public.social_comments(post_id,created_at);
