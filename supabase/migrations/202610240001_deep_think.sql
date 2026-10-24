@@ -18,6 +18,22 @@ create table if not exists public.deep_think_cases (
   reviewed_by uuid references auth.users(id),
   reviewed_at timestamptz
 );
+create table if not exists public.deep_think_case_events (
+ id uuid primary key default gen_random_uuid(),
+ case_id uuid not null references public.deep_think_cases(id) on delete cascade,
+ actor_id uuid not null references auth.users(id),
+ event_type text not null check (event_type in ('submitted','status_changed','decision_delivered')),
+ status text,
+ message text,
+ created_at timestamptz not null default now()
+);
+create index if not exists deep_think_case_events_case_created_idx on public.deep_think_case_events(case_id, created_at);
+alter table public.deep_think_case_events enable row level security;
+revoke all on public.deep_think_case_events from anon, authenticated;
+grant select (id,case_id,actor_id,event_type,status,message,created_at) on public.deep_think_case_events to authenticated;
+drop policy if exists deep_think_events_own_or_reviewer on public.deep_think_case_events;
+create policy deep_think_events_own_or_reviewer on public.deep_think_case_events for select to authenticated
+using (exists(select 1 from public.deep_think_cases c where c.id=case_id and (c.user_id=auth.uid() or public.clario_can_review_deep_think())));
 create index if not exists deep_think_cases_user_created_idx on public.deep_think_cases(user_id, created_at desc);
 create index if not exists deep_think_cases_status_created_idx on public.deep_think_cases(status, created_at);
 alter table public.deep_think_cases enable row level security;
