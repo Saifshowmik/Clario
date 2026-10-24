@@ -49,7 +49,7 @@ reset role;
 do $test$
 begin
  if not exists(select 1 from public.mind_sessions where user_id='10000000-0000-4000-8000-000000000001' and note='test saved session') then
-   raise exception 'Other user deleted someone else\'s saved session';
+   raise exception 'Other user deleted a session belonging to another user';
  end if;
 end
 $test$;
