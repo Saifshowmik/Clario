@@ -34,11 +34,12 @@ begin
  if p_age_band not in ('under_13','13_15','16_17','18_plus') then raise exception 'Invalid age group'; end if;
  if p_locale !~ '^[a-z]{2}(-[A-Z]{2})?$' then raise exception 'Invalid language'; end if;
  if p_session_mode not in ('temporary','saved') then raise exception 'Invalid session mode'; end if;
+ if p_session_mode='temporary' then raise exception 'Temporary sessions are client-only and are not stored'; end if;
  if p_mood not in ('great','okay','low','anxious','overwhelmed','angry','numb','other') then raise exception 'Invalid mood'; end if;
  if coalesce(cardinality(p_needs),0)>8 or length(coalesce(p_note,''))>4000 then raise exception 'Session is too long'; end if;
  -- Minors' guardian-consent verification is not implemented: do not persist their sessions yet.
  if p_age_band<>'18_plus' then raise exception 'Saved sessions for minors are disabled until guardian-consent safeguards are configured'; end if;
- v_exp:=case when p_session_mode='temporary' then now()+interval '24 hours' else null end;
+ v_exp:=null;
  insert into public.mind_sessions(user_id,age_band,locale,session_mode,mood,needs,note,expires_at)
  values(v_uid,p_age_band,p_locale,p_session_mode,p_mood,coalesce(p_needs,'{}'),coalesce(p_note,''),v_exp) returning id into v_id;
  return v_id;
