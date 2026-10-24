@@ -29,6 +29,9 @@ jobs:
           grep -q 'aria-labelledby' public/mind-studio.js
           grep -q 'var MOODS=' public/mind-studio.js
           grep -q 'var NEEDS=' public/mind-studio.js
+          grep -q 'Delete this saved session?' public/mind-studio.js
+          grep -q 'mind_sessions_delete_own' supabase/migrations/202610240012_clario_mind.sql
+          grep -q 'User could not delete own saved session' .github/scripts/test-clario-mind-migration.sql
           ! grep -q 'Temporary — expires after 24 hours' public/mind-studio.js
           grep -q 'clario_mind_save_session' public/mind-studio.js
           grep -q 'clario_mind_list_sessions' public/mind-studio.js
