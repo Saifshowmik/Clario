@@ -163,16 +163,11 @@
     var ctx = clientAndUser(), name = (rawUsername || "").trim().replace(/^@/, "").toLowerCase();
     if (!ctx.client || !ctx.user) { status("social-follow-status", "Sign in to request a follow.", false); return; }
     if (!/^[a-z0-9_]{3,24}$/.test(name)) { status("social-follow-status", "Enter a valid username (3–24 letters, numbers, or underscores).", false); return; }
-    ctx.client.from("profiles").select("id,username,profile_visibility").eq("username", name).maybeSingle()
-      .then(function (res) {
-        if (res.error || !res.data) { status("social-follow-status", "No discoverable profile found for that username.", false); return; }
-        if (res.data.id === ctx.user.id) { status("social-follow-status", "You cannot follow yourself.", false); return; }
-        ctx.client.from("social_follows").insert({ requester_id: ctx.user.id, target_id: res.data.id, status: "pending" })
-          .then(function (done) {
-            if (done.error) { status("social-follow-status", "Follow request could not be sent. It may already exist or the target has blocked requests.", false); return; }
-            status("social-follow-status", "Follow request sent. The other member must accept it.", true);
-          });
-      });
+    status("social-follow-status", "Sending follow request…", true);
+    ctx.client.rpc("request_social_follow", { p_username: name }).then(function (res) {
+      if (res.error) { status("social-follow-status", res.error.message || "Follow request could not be sent.", false); return; }
+      status("social-follow-status", "Follow request sent. Private profiles can accept or decline it.", true);
+    });
   }
   function loadFeed() {
     var ctx = clientAndUser(), list = document.getElementById("social-feed-list");
