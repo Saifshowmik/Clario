@@ -283,6 +283,11 @@
           var like = el("button", { type: "button", className: "btn s" }, "Like");
           like.addEventListener("click", function () { toggleLike(p.id, like); });
           actions.appendChild(like);
+          if (p.author_id !== ctx.user.id) {
+            var reportPostButton = el("button", { type: "button", className: "btn s" }, "Report post");
+            reportPostButton.addEventListener("click", function () { reportPost(p.id); });
+            actions.appendChild(reportPostButton);
+          }
           if (p.author_id === ctx.user.id) {
             var remove = el("button", { type: "button", className: "btn s" }, "Delete post");
             remove.addEventListener("click", function () { deletePost(p.id); });
@@ -299,6 +304,22 @@
           loadComments(p.id, commentList);
         });
       });
+  }
+  function reportPost(postId) {
+    var ctx = clientAndUser();
+    if (!ctx.client || !ctx.user) return;
+    var reason = document.getElementById("social-report-reason");
+    var details = document.getElementById("social-report-details");
+    if (!window.confirm("Submit a private report for this post using the selected reason: " + reason.value + "?")) return;
+    ctx.client.rpc("report_social_post", {
+      p_post_id: postId,
+      p_reason: reason.value,
+      p_details: (details.value || "").trim()
+    }).then(function (res) {
+      if (res.error) { status("social-safety-status", res.error.message || "Could not report post.", false); return; }
+      details.value = "";
+      status("social-safety-status", "Post report submitted privately for moderator review.", true);
+    });
   }
   function toggleLike(postId, button) {
     var ctx = clientAndUser();
