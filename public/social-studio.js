@@ -49,6 +49,14 @@
     followButton.addEventListener("click", function () { requestFollow(username.value); });
     followPanel.appendChild(username); followPanel.appendChild(followButton); followPanel.appendChild(followStatus);
     section.appendChild(followPanel);
+    var requestsPanel = el("div", { className: "panel" });
+    requestsPanel.appendChild(el("h3", {}, "Incoming follow requests"));
+    var requestsStatus = el("p", { id: "social-requests-status", role: "status", className: "sub" }, "");
+    var requestsList = el("div", { id: "social-requests-list" });
+    var requestsRefresh = el("button", { type: "button", className: "btn s" }, "Refresh requests");
+    requestsRefresh.addEventListener("click", loadFollowRequests);
+    requestsPanel.appendChild(requestsRefresh); requestsPanel.appendChild(requestsStatus); requestsPanel.appendChild(requestsList);
+    section.appendChild(requestsPanel);
     var feed = el("div", { className: "panel" });
     feed.appendChild(el("h3", {}, "Your feed"));
     var feedStatus = el("p", { id: "social-feed-status", role: "status", className: "sub" }, "");
@@ -66,6 +74,7 @@
     post.addEventListener("click", publish);
     loadFeed();
     loadStories();
+    loadFollowRequests();
   }
   function status(id, text, good) {
     var n = document.getElementById(id);
@@ -121,6 +130,32 @@
             card.appendChild(remove);
           }
           list.appendChild(card);
+        });
+      });
+  }
+  function loadFollowRequests() {
+    var ctx = clientAndUser(), list = document.getElementById("social-requests-list");
+    if (!list) return;
+    list.replaceChildren();
+    if (!ctx.client || !ctx.user) { status("social-requests-status", "Sign in to manage follow requests.", false); return; }
+    ctx.client.from("social_follows").select("id,requester_id,created_at").eq("target_id", ctx.user.id).eq("status", "pending").order("created_at", { ascending: false }).limit(50)
+      .then(function (res) {
+        if (res.error) { status("social-requests-status", "Follow requests are unavailable until the social migration is applied.", false); return; }
+        var rows = res.data || [];
+        if (!rows.length) { status("social-requests-status", "No pending requests.", true); return; }
+        status("social-requests-status", rows.length + " pending request(s).", true);
+        rows.forEach(function (request) {
+          var row = el("div", { className: "panel" });
+          row.appendChild(el("p", {}, "Member request · " + new Date(request.created_at).toLocaleString()));
+          ["accepted","rejected"].forEach(function (decision) {
+            var button = el("button", { type: "button", className: "btn s" }, decision === "accepted" ? "Accept" : "Decline");
+            button.addEventListener("click", function () {
+              ctx.client.from("social_follows").update({ status: decision, updated_at: new Date().toISOString() }).eq("id", request.id).eq("target_id", ctx.user.id)
+                .then(function (done) { if (done.error) status("social-requests-status", "Could not update request.", false); else loadFollowRequests(); });
+            });
+            row.appendChild(button);
+          });
+          list.appendChild(row);
         });
       });
   }
