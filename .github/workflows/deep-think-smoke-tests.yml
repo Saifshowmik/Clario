@@ -21,10 +21,19 @@ jobs:
           node --check public/deep-think.js
           node --check public/profile-studio.js
           node --check public/social-studio.js
+          node --check public/travel-studio.js
           grep -q 'SOCIAL_MEDIA_MAX_BYTES = 8 \* 1024 \* 1024' public/social-studio.js
           grep -q 'function validateSocialImage' public/social-studio.js
           grep -q 'function loadStories' public/social-studio.js
           grep -q '202610240007_social_media.sql' docs/SCREEN_IMPLEMENTATION_TRACKER.md
+          grep -q '202610240008_travel_planner.sql' docs/SCREEN_IMPLEMENTATION_TRACKER.md
+          grep -q 'travel_trips' public/travel-studio.js
+          grep -q 'Save private trip draft' public/travel-studio.js
+          grep -q 'function loadTrips' public/travel-studio.js
+          grep -q 'data-go="travel"' public/index.html
+          grep -q '<script src="travel-studio.js"></script>' public/index.html
+          grep -q 'enable row level security' supabase/migrations/202610240008_travel_planner.sql
+          grep -q 'using (user_id=auth.uid())' supabase/migrations/202610240008_travel_planner.sql
           grep -q "values ('social-media','social-media',false,8388608" supabase/migrations/202610240007_social_media.sql
           grep -q "allowed_mime_types=array\['image/jpeg','image/png','image/webp'\]" supabase/migrations/202610240007_social_media.sql
           grep -q 'Social media authorized read' supabase/migrations/202610240007_social_media.sql
