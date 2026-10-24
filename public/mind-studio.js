@@ -6,7 +6,7 @@ function init(){
  var page=el("div",{id:"p-mind",class:"pg"});page.hidden=true;var wrap=el("section",{});page.appendChild(wrap);
  wrap.appendChild(el("h2",{},"Clario Mind"));
  wrap.appendChild(el("p",{class:"sub"},"A private space for reflection and wellbeing check-ins. This is not therapy, diagnosis, or an emergency service. Sessions are not monitored in real time. If you may be in immediate danger, contact local emergency services or a trusted person now."));
- var safety=el("div",{class:"panel",role:"note"});safety.appendChild(el("strong",{},"Your privacy and safety"));safety.appendChild(el("p",{class:"sub"},"Choose a temporary session to have it expire after 24 hours, or save it to your account. Saved session history is available only to you. Do not include passwords, full addresses, or details you would not want stored."));
+ var safety=el("div",{class:"panel",role:"note"});safety.appendChild(el("strong",{},"Your privacy and safety"));safety.appendChild(el("p",{class:"sub"},"Temporary check-ins stay only in this page and clear when you leave or refresh. Saved check-ins are stored in your account. Saved session history is available only to you. Do not include passwords, full addresses, or details you would not want stored."));
  var form=el("form",{class:"panel"});form.appendChild(el("h3",{},"Wellbeing check-in"));
  function field(label,id,control){var box=el("label",{});box.appendChild(el("span",{},label));control.id=id;control.name=id;control.style.cssText="display:block;width:100%;padding:10px;margin:6px 0 14px;border-radius:10px;";box.appendChild(control);form.appendChild(box);return control;}
  var age=field("Age group","mind-age",el("select",{}));
