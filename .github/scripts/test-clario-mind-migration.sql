@@ -29,7 +29,18 @@ select count(*) as saved_count from public.clario_mind_list_sessions() \gset
   \echo 'Expected exactly one saved session'
   \quit 1
 \endif
+-- User can delete their own saved session.
+set local request.jwt.claim.sub = '10000000-0000-4000-8000-000000000001';
+set local role authenticated;
+delete from public.mind_sessions where note='test saved session';
 reset role;
+do $test$
+begin
+ if exists(select 1 from public.mind_sessions where user_id='10000000-0000-4000-8000-000000000001' and note='test saved session') then
+   raise exception 'User could not delete own saved session';
+ end if;
+end
+$test$;
 -- Saved sessions have no expiry; temporary reflections are never persisted.
 do $test$
 begin
