@@ -132,3 +132,24 @@ begin
 end $$;
 revoke all on function public.list_social_reports() from public;
 grant execute on function public.list_social_reports() to authenticated;
+
+create or replace function public.report_social_post(p_post_id uuid, p_reason text, p_details text default '')
+returns uuid language plpgsql security definer set search_path=public,pg_temp as $$
+declare
+  v_author uuid;
+  v_report uuid;
+begin
+  if auth.uid() is null then raise exception 'Sign in required'; end if;
+  if p_reason not in ('spam','harassment','hate','sexual_content','violence','self_harm','impersonation','other') then
+    raise exception 'Invalid report reason';
+  end if;
+  if char_length(coalesce(p_details,'')) > 1500 then raise exception 'Report details are too long'; end if;
+  select author_id into v_author from public.social_posts where id=p_post_id;
+  if v_author is null then raise exception 'Post not found'; end if;
+  if v_author=auth.uid() then raise exception 'You cannot report your own post'; end if;
+  insert into public.social_reports(reporter_id,reported_user_id,post_id,reason,details)
+  values(auth.uid(),v_author,p_post_id,p_reason,coalesce(p_details,'')) returning id into v_report;
+  return v_report;
+end $$;
+revoke all on function public.report_social_post(uuid,text,text) from public;
+grant execute on function public.report_social_post(uuid,text,text) to authenticated;
