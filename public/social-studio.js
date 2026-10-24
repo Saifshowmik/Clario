@@ -57,6 +57,24 @@
     requestsRefresh.addEventListener("click", loadFollowRequests);
     requestsPanel.appendChild(requestsRefresh); requestsPanel.appendChild(requestsStatus); requestsPanel.appendChild(requestsList);
     section.appendChild(requestsPanel);
+    var safetyPanel = el("div", { className: "panel" });
+    safetyPanel.appendChild(el("h3", {}, "Safety controls"));
+    var safetyUsername = el("input", { id: "social-safety-username", type: "text", maxlength: "24", placeholder: "Username to block or mute", style: "width:100%;min-height:48px;background:var(--nv);color:#fff;border:1px solid var(--cb);border-radius:12px;padding:8px 12px;font:inherit" });
+    var safetyButtons = el("div", { style: "display:flex;gap:8px;flex-wrap:wrap;margin-top:10px" });
+    [["Block member", blockMember],["Mute member", muteMember]].forEach(function (item) {
+      var b = el("button", { type: "button", className: "btn s" }, item[0]);
+      b.addEventListener("click", function () { item[1](safetyUsername.value); });
+      safetyButtons.appendChild(b);
+    });
+    var safetyStatus = el("p", { id: "social-safety-status", role: "status", className: "sub" }, "");
+    var reportReason = el("select", { id: "social-report-reason", style: "width:100%;min-height:48px;background:var(--nv);color:#fff;border:1px solid var(--cb);border-radius:12px;padding:8px 12px;font:inherit;margin-top:12px" });
+    [["spam","Spam"],["harassment","Harassment"],["hate","Hate or abuse"],["sexual_content","Sexual content"],["violence","Violence"],["self_harm","Self-harm concern"],["impersonation","Impersonation"],["other","Other"]].forEach(function (v) { reportReason.appendChild(el("option", { value: v[0] }, v[1])); });
+    var reportDetails = el("textarea", { id: "social-report-details", rows: "2", maxlength: "1500", placeholder: "Optional details about a concern", style: "width:100%;background:var(--nv);color:#fff;border:1px solid var(--cb);border-radius:12px;padding:10px;font:inherit;margin-top:8px" });
+    var reportButton = el("button", { type: "button", className: "btn s" }, "Submit report");
+    reportButton.addEventListener("click", submitReport);
+    safetyPanel.appendChild(safetyUsername); safetyPanel.appendChild(safetyButtons);
+    safetyPanel.appendChild(reportReason); safetyPanel.appendChild(reportDetails); safetyPanel.appendChild(reportButton); safetyPanel.appendChild(safetyStatus);
+    section.appendChild(safetyPanel);
     var feed = el("div", { className: "panel" });
     feed.appendChild(el("h3", {}, "Your feed"));
     var feedStatus = el("p", { id: "social-feed-status", role: "status", className: "sub" }, "");
@@ -158,6 +176,46 @@
           list.appendChild(row);
         });
       });
+  }
+  function resolveUsername(raw) {
+    var ctx = clientAndUser(), name = (raw || "").trim().replace(/^@/, "").toLowerCase();
+    if (!ctx.client || !ctx.user) { status("social-safety-status", "Sign in to use safety controls.", false); return Promise.reject(new Error("Sign in required")); }
+    if (!/^[a-z0-9_]{3,24}$/.test(name)) { status("social-safety-status", "Enter a valid username.", false); return Promise.reject(new Error("Invalid username")); }
+    return ctx.client.rpc("resolve_social_username", { p_username: name }).then(function (res) {
+      if (res.error || !res.data) throw new Error("No available member found.");
+      if (res.data === ctx.user.id) throw new Error("You cannot apply this action to yourself.");
+      return { ctx: ctx, target: res.data };
+    });
+  }
+  function blockMember(raw) {
+    resolveUsername(raw).then(function (v) {
+      return v.ctx.client.from("social_blocks").upsert({ blocker_id: v.ctx.user.id, blocked_id: v.target });
+    }).then(function (res) {
+      if (res && res.error) throw new Error(res.error.message);
+      status("social-safety-status", "Member blocked. Their content will be hidden where block policies apply.", true); loadFeed();
+    }).catch(function (e) { status("social-safety-status", e.message || "Could not block member.", false); });
+  }
+  function muteMember(raw) {
+    resolveUsername(raw).then(function (v) {
+      return v.ctx.client.from("social_mutes").upsert({ muter_id: v.ctx.user.id, muted_id: v.target });
+    }).then(function (res) {
+      if (res && res.error) throw new Error(res.error.message);
+      status("social-safety-status", "Member muted. Feed filtering is being applied.", true); loadFeed();
+    }).catch(function (e) { status("social-safety-status", e.message || "Could not mute member.", false); });
+  }
+  function submitReport() {
+    var ctx = clientAndUser(), raw = document.getElementById("social-safety-username").value;
+    resolveUsername(raw).then(function (v) {
+      return v.ctx.client.from("social_reports").insert({
+        reporter_id: v.ctx.user.id, reported_user_id: v.target,
+        reason: document.getElementById("social-report-reason").value,
+        details: document.getElementById("social-report-details").value.trim()
+      });
+    }).then(function (res) {
+      if (res && res.error) throw new Error(res.error.message);
+      document.getElementById("social-report-details").value = "";
+      status("social-safety-status", "Report submitted privately for moderator review.", true);
+    }).catch(function (e) { status("social-safety-status", e.message || "Could not submit report.", false); });
   }
   function requestFollow(rawUsername) {
     var ctx = clientAndUser(), name = (rawUsername || "").trim().replace(/^@/, "").toLowerCase();
