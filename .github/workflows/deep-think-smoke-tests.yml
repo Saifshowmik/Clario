@@ -36,6 +36,11 @@ jobs:
           grep -q '<script src="social-studio.js"></script>' public/index.html
           grep -q 'social_posts' public/social-studio.js
           grep -q 'social_comments' public/social-studio.js
+          grep -q 'function loadSafetyList' public/social-studio.js
+          grep -q 'social_blocks' public/social-studio.js
+          grep -q 'social_mutes' public/social-studio.js
+          grep -q 'Unblock' public/social-studio.js
+          grep -q 'Unmute' public/social-studio.js
           grep -q 'submit_deep_think_case' public/deep-think.js
           grep -q 'review_deep_think_case' public/deep-think.js
       - name: Verify Deep Think does not explicitly call AI services
