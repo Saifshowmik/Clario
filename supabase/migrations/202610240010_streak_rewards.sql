@@ -39,6 +39,7 @@ declare
  v_cursor date;
  v_last date;
  v_created integer:=0;
+ v_milestone integer;
 begin
  if v_uid is null then raise exception 'Sign-in required'; end if;
  -- Backfill only dates with five or more saved decisions, using Dhaka calendar days.
@@ -65,13 +66,17 @@ begin
      v_cursor:=v_cursor-1;
    end loop;
  end if;
- -- Record only exact milestone crossings, once per account and milestone.
- if v_current=60 then
+ -- Catch up any milestones if the user did not open the dashboard on the exact day.
+ if v_current>=60 then
    insert into public.streak_milestones(user_id,milestone_days,achieved_on,reward_code)
-   values(v_uid,60,v_today,'pro_7_days') on conflict do nothing;
- elsif v_current>=365 and v_current%365=0 then
-   insert into public.streak_milestones(user_id,milestone_days,achieved_on,reward_code)
-   values(v_uid,v_current,v_today,'extra_premium_1_day') on conflict do nothing;
+   values(v_uid,60,v_today,'pro_7_days') on conflict(user_id,milestone_days) do nothing;
+ end if;
+ if v_current>=365 then
+   for v_milestone in 365..v_current by 365 loop
+     insert into public.streak_milestones(user_id,milestone_days,achieved_on,reward_code)
+     values(v_uid,v_milestone,v_today,'extra_premium_1_day')
+     on conflict(user_id,milestone_days) do nothing;
+   end loop;
  end if;
  select coalesce(max(run_len),0) into v_best from (
    select count(*) run_len from (
