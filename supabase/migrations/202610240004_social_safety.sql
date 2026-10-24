@@ -112,3 +112,23 @@ begin
 end $$;
 revoke all on function public.review_social_report(uuid,text) from public;
 grant execute on function public.review_social_report(uuid,text) to authenticated;
+
+create or replace function public.list_social_reports()
+returns table (
+  id uuid, reporter_id uuid, reported_user_id uuid, post_id uuid,
+  reason text, details text, status text, created_at timestamptz
+)
+language plpgsql stable security definer set search_path=public,pg_temp as $$
+begin
+  if auth.uid() is null or not exists(select 1 from public.profiles where id=auth.uid() and role='owner') then
+    raise exception 'Owner access required';
+  end if;
+  return query
+    select r.id,r.reporter_id,r.reported_user_id,r.post_id,r.reason,r.details,r.status,r.created_at
+    from public.social_reports r
+    where r.status in ('open','reviewing')
+    order by r.created_at asc
+    limit 100;
+end $$;
+revoke all on function public.list_social_reports() from public;
+grant execute on function public.list_social_reports() to authenticated;
