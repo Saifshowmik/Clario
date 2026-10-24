@@ -355,6 +355,24 @@
         });
       });
   }
+  function editPost(postId, currentCaption) {
+    var ctx = clientAndUser();
+    if (!ctx.client || !ctx.user) return;
+    var nextCaption = window.prompt("Edit your post (maximum 3000 characters):", currentCaption || "");
+    if (nextCaption === null) return;
+    nextCaption = nextCaption.trim();
+    if (!nextCaption || nextCaption.length > 3000) {
+      status("social-feed-status", "Post text must be between 1 and 3000 characters.", false);
+      return;
+    }
+    ctx.client.from("social_posts")
+      .update({ caption: nextCaption, updated_at: new Date().toISOString() })
+      .eq("id", postId).eq("author_id", ctx.user.id)
+      .then(function (res) {
+        if (res.error) { status("social-feed-status", "Could not edit post: " + res.error.message, false); return; }
+        loadFeed();
+      });
+  }
   function deletePost(postId) {
     var ctx = clientAndUser();
     if (!ctx.client || !ctx.user || !window.confirm("Delete this post? This cannot be undone.")) return;
