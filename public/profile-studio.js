@@ -45,9 +45,14 @@
     var coverLabel = node("label", { for: "profile-cover-file" }, "Cover photo");
     mediaWrap.appendChild(avatarLabel); mediaWrap.appendChild(avatarInput);
     mediaWrap.appendChild(coverLabel); mediaWrap.appendChild(coverInput);
-    var avatarPreview = node("img", { id: "profile-avatar-preview", alt: "Profile photo preview", hidden: "", style: "max-width:120px;max-height:120px;object-fit:cover;border-radius:50%;display:block;margin:8px 0" });
-    var coverPreview = node("img", { id: "profile-cover-preview", alt: "Cover photo preview", hidden: "", style: "max-width:100%;max-height:180px;object-fit:cover;border-radius:12px;display:block;margin:8px 0" });
+    var avatarPreview = node("img", { id: "profile-avatar-preview", alt: "Profile photo preview", hidden: "", style: "max-width:120px;max-height:120px;object-fit:cover;border-radius:50%;margin:8px 0" });
+    var coverPreview = node("img", { id: "profile-cover-preview", alt: "Cover photo preview", hidden: "", style: "max-width:100%;max-height:180px;object-fit:cover;border-radius:12px;margin:8px 0" });
     mediaWrap.appendChild(avatarPreview); mediaWrap.appendChild(coverPreview);
+    var removeAvatar = node("button", { type: "button", className: "btn s" }, "Remove profile photo");
+    var removeCover = node("button", { type: "button", className: "btn s" }, "Remove cover photo");
+    mediaWrap.appendChild(removeAvatar); mediaWrap.appendChild(removeCover);
+    removeAvatar.addEventListener("click", function () { removeProfileImage("avatar"); });
+    removeCover.addEventListener("click", function () { removeProfileImage("cover"); });
     panel.appendChild(mediaWrap);
     var visibilityWrap = node("div", { style: "margin-bottom:16px" });
     visibilityWrap.appendChild(node("label", { for: "profile-visibility" }, "Profile visibility"));
@@ -100,11 +105,11 @@
   function showPrivateImage(elementId, path) {
     var client = window.sb, u = window.U, img = document.getElementById(elementId);
     if (!img) return;
-    img.hidden = true; img.removeAttribute("src");
+    img.hidden = true; img.style.display = "none"; img.removeAttribute("src");
     if (!client || !u || !path || !path.startsWith(u.id + "/")) return;
     client.storage.from("profile-media").createSignedUrl(path, 300).then(function (res) {
       if (res.error || !res.data || !res.data.signedUrl) return;
-      img.src = res.data.signedUrl; img.hidden = false;
+      img.src = res.data.signedUrl; img.hidden = false; img.style.display = "block";
     });
   }
   function uploadProfileImage(kind, file) {
@@ -126,6 +131,28 @@
           say(kind === "avatar" ? "Profile photo uploaded privately." : "Cover photo uploaded privately.", true);
         });
       }).catch(function () { say("Image upload failed. Please retry.", false); });
+  }
+  function removeProfileImage(kind) {
+    var client = window.sb, u = window.U;
+    if (!client || !u) { say("Sign in before changing profile media.", false); return; }
+    if (!window.confirm("Remove your " + (kind === "avatar" ? "profile photo" : "cover photo") + "?")) return;
+    var column = kind === "avatar" ? "avatar_path" : "cover_path";
+    client.from("profiles").select(column).eq("id", u.id).maybeSingle().then(function (res) {
+      if (res.error) { say("Could not load the current image path.", false); return; }
+      var path = res.data && res.data[column];
+      if (!path) { say("No image is currently saved.", true); return; }
+      if (!path.startsWith(u.id + "/")) { say("Image path did not pass the ownership check.", false); return; }
+      client.storage.from("profile-media").remove([path]).then(function (removed) {
+        if (removed.error) { say("Could not remove the private image.", false); return; }
+        var patch = {}; patch[column] = null;
+        client.from("profiles").update(patch).eq("id", u.id).then(function (saved) {
+          if (saved.error) { say("Image removed from storage but profile update failed; please retry.", false); return; }
+          var preview = document.getElementById(kind === "avatar" ? "profile-avatar-preview" : "profile-cover-preview");
+          preview.hidden = true; preview.style.display = "none"; preview.removeAttribute("src");
+          say("Profile image removed.", true);
+        });
+      });
+    });
   }
   function saveProfile() {
     var client = window.sb, u = window.U;
