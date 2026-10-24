@@ -9,9 +9,9 @@ create table public.profiles (
   plan text not null default 'free'
 );
 create or replace function auth.uid()
-returns uuid language sql stable as $
+returns uuid language sql stable as $$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
-$;
+$$;
 
 -- Minimal core Clario schema needed to integration-test paid rewards and streak entitlements.
 create table public.decisions (
@@ -46,9 +46,9 @@ create table public.audit_log (
  created_at timestamptz not null default now()
 );
 create or replace function public.is_owner() returns boolean
-language sql stable security definer set search_path=public as $
+language sql stable security definer set search_path=public as $$
  select exists(select 1 from public.profiles where id=auth.uid() and role='owner')
-$;
+$$;
 grant usage on schema auth to anon, authenticated;
 grant execute on function auth.uid() to anon, authenticated;
 insert into auth.users(id) values
