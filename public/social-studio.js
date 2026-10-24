@@ -289,8 +289,11 @@
             actions.appendChild(reportPostButton);
           }
           if (p.author_id === ctx.user.id) {
+            var edit = el("button", { type: "button", className: "btn s" }, "Edit post");
+            edit.addEventListener("click", function () { editPost(p.id, p.caption); });
             var remove = el("button", { type: "button", className: "btn s" }, "Delete post");
             remove.addEventListener("click", function () { deletePost(p.id); });
+            actions.appendChild(edit);
             actions.appendChild(remove);
           }
           card.appendChild(actions);
@@ -352,6 +355,18 @@
         (res.data || []).forEach(function (c) {
           var line = el("p", { style: "font-size:14px;color:var(--t2);margin:8px 0" }, (c.author_id === (ctx.user && ctx.user.id) ? "You: " : "Member: ") + c.body);
           list.appendChild(line);
+          if (ctx.user && c.author_id === ctx.user.id) {
+            var removeComment = el("button", { type: "button", className: "btn s" }, "Delete comment");
+            removeComment.addEventListener("click", function () {
+              if (!window.confirm("Delete your comment?")) return;
+              ctx.client.from("social_comments").delete().eq("id", c.id).eq("author_id", ctx.user.id)
+                .then(function (done) {
+                  if (done.error) status("social-feed-status", "Comment could not be deleted: " + done.error.message, false);
+                  else loadComments(postId, list);
+                });
+            });
+            list.appendChild(removeComment);
+          }
         });
       });
   }
