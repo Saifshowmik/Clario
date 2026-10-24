@@ -44,7 +44,7 @@ on public.deep_think_cases to authenticated;
 
 create or replace function public.clario_can_review_deep_think()
 returns boolean language sql stable security definer set search_path = public, pg_temp as $$
-  select exists(select 1 from public.profiles p where p.id = auth.uid() and p.role in ('admin','owner'));
+  select exists(select 1 from public.profiles p where p.id = auth.uid() and p.role = 'owner');
 $$;
 revoke all on function public.clario_can_review_deep_think() from public;
 grant execute on function public.clario_can_review_deep_think() to authenticated;
