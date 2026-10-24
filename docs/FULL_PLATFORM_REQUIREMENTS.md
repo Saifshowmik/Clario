@@ -89,6 +89,21 @@ Prices are product requirements. Payment settlement, renewals, refunds, and plan
 - Clearly label estimates, show data freshness, and never invent live route, opening-hour, or price data.
 - Respect location privacy; request only the location needed for the trip.
 
+
+## Deep Think — human-only decision workflow (all plans)
+
+- Deep Think is available to every account tier, including Free; it must not be paywalled by subscription.
+- When creating a decision, the user can explicitly choose either the normal Clario workflow or **Deep Think**. Explain before submission that Deep Think is reviewed by a human administrator/owner and does not use AI for analysis or the final decision.
+- Deep Think opens a dedicated **Deep Think Board** for the decision. The user can provide the full context they consider relevant to their life, including goals, constraints, background, relationships, finances, education/career, lifestyle, options, risks, priorities, supporting notes and attachments. Use clear sections and allow the user to skip irrelevant sections; do not require unnecessary sensitive details.
+- No AI model or AI-generated summary, ranking, recommendation, classification, inference, or decision may be used anywhere in the Deep Think analysis/review path. Do not send Deep Think board content to AI APIs or use it to generate AI embeddings.
+- Submission creates a pending human-review case. Only authorized **admin** and **owner** roles can access the board and submit the official decision. Other users, ordinary support roles, and public/community features must not expose it. Enforce this with server-side authorization and database/storage policies, not just hidden UI.
+- Admin/owner reviews the original user-provided information and may ask the user for clarification; record questions, answers, reviewer identity, timestamps, status changes, and the final decision in an auditable case history.
+- Suggested statuses: Draft, Submitted, In Review, Needs Information, Decision Ready, Delivered, Closed. Users can view their own case status and the delivered decision, but cannot view internal admin-only notes.
+- Make access scope, human-only handling, expected review status, and any response-time estimate clear before submission. Do not promise a turnaround time until an operational service level is approved.
+- Treat board content and attachments as highly private. Apply least-privilege access, secure upload validation, encryption in transit/at rest where supported, access audit logs, retention/deletion rules, and account deletion handling. Never use board content for model training.
+- Preserve normal AI-assisted decisions as a separate workflow; selecting Deep Think must explicitly bypass AI processing. Admin/owner must not use AI tools to analyze the case as part of the Clario Deep Think workflow.
+- Acceptance tests: Free and paid users can select Deep Think; no AI/API processing occurs; unauthorized roles cannot read or decide cases; admin/owner can review and deliver a decision; user sees only their own board and public-facing case history; internal notes remain private; access and decision events are audited.
+
 ## Existing Clario modules to preserve
 - Public marketing pages, authentication, customer dashboard, Decision Studio, result explanations, shopping/technology decisions, life-partner/match profiles, AI-assisted analysis with admin final approval, admin console, user/plan management, payment review, prices, audit logs, multiple languages, and Clario Mind.
 - Clario Mind: age-specific experiences for all age groups, multiple languages, temporary private sessions plus optional saved sessions, appropriate safeguards, and legally required guardian consent. Implement privacy and safety controls before launch.
