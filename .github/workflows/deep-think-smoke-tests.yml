@@ -24,10 +24,16 @@ jobs:
           grep -q '<script src="deep-think.js"></script>' public/index.html
           grep -q 'submit_deep_think_case' public/deep-think.js
           grep -q 'review_deep_think_case' public/deep-think.js
+      - name: Verify Deep Think is not explicitly calling AI services
+        run: |
+          ! grep -Eiq 'openai|anthropic|gemini|fetch\(|embeddings|createChatCompletion' public/deep-think.js
       - name: Verify database authorization safeguards
         run: |
           grep -q 'enable row level security' supabase/migrations/202610240001_deep_think.sql
           grep -q "p.role = 'owner'" supabase/migrations/202610240001_deep_think.sql
+          ! grep -q "p.role in ('admin','owner')" supabase/migrations/202610240001_deep_think.sql
           grep -q 'Admin/owner access required' supabase/migrations/202610240001_deep_think.sql
-          grep -q 'internal_note' supabase/migrations/202610240001_deep_think.sql
           grep -q 'deep_think_case_events' supabase/migrations/202610240001_deep_think.sql
+          grep -q 'grant select (id,user_id,title,background,goals,options_text,constraints_text,risks,additional_text,status,final_decision,created_at,updated_at,reviewed_by,reviewed_at)' supabase/migrations/202610240001_deep_think.sql
+          ! grep -q 'grant select .*internal_note' supabase/migrations/202610240001_deep_think.sql
+          test "$(grep -c 'end \\$\\$;' supabase/migrations/202610240001_deep_think.sql)" -eq 2
