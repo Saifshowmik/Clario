@@ -17,7 +17,7 @@ Do not mark a screen implemented merely because a link or placeholder exists. A 
 | 7 | Customer · Verify & recover | TBD | Not started | Map to PDF page 12; verify actual PDF page before implementation. |
 | 8 | Customer · Onboarding quiz | TBD | Not started | Map to PDF page 13; verify actual PDF page before implementation. |
 | 9 | Customer · Dashboard | TBD | Not started | Map to PDF page 14; verify actual PDF page before implementation. |
-| 10 | Customer · My Profiles | TBD | Not started | Map to PDF page 15; verify actual PDF page before implementation. |
+| 10 | Customer · My Profiles | `#profile` / Profile Studio | In progress | Editable display name, username, bio, interests and visibility preference; privilege fields excluded and display-name limits enforced by database migration. Cover/avatar, gallery, follow graph views and design-specific responsive review remain. Map to PDF page 15; verify actual PDF page before implementation. |
 | 11 | Mobile · Menu & bottom nav | TBD | Not started | Map to PDF page 16; verify actual PDF page before implementation. |
 | 12 | Customer · AI Decision Studio | `#decide` + Deep Think board | In progress | Existing decision form remains; Deep Think module is wired but not runtime-verified. Map to PDF page 17; verify actual PDF page before implementation. |
 | 13 | Admin · Dashboard | `#admin` + Deep Think review queue | In progress | Existing owner console remains; Deep Think queue requires staging role and browser tests. Map to PDF page 18; verify actual PDF page before implementation. |
