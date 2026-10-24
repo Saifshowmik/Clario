@@ -82,7 +82,7 @@ create or replace function public.review_deep_think_case(
 ) returns void
 language plpgsql security definer set search_path = public, pg_temp as $$
 begin
-  if auth.uid() is null or not public.clario_can_review_deep_think() then raise exception 'Admin/owner access required'; end if;
+  if auth.uid() is null or not public.clario_can_review_deep_think() then raise exception 'Owner access required'; end if;
   if p_status not in ('in_review','needs_information','decision_ready','delivered','closed') then raise exception 'Invalid status'; end if;
   if p_status = 'delivered' and (p_final_decision is null or char_length(trim(p_final_decision)) = 0) then
     raise exception 'A final decision is required before delivery';
