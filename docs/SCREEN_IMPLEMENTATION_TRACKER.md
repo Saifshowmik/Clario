@@ -167,4 +167,6 @@ The existing website is a static HTML/CSS/JavaScript app under `public/`, deploy
 - **Deep Think database migration — drafted, not applied:** `supabase/migrations/202610240001_deep_think.sql` defines case submission and admin/owner review functions. Column-level read permissions exclude internal reviewer notes.
 - **Not yet verified:** browser behavior, SQL execution on staging, authorization tests, and end-to-end user/admin flows.
 - **Not deployed:** production branch `main` and the live GitHub Pages website have not been changed by this work.
-- Social Studio has partial implementation on `#social` (see screen 19); profile/media completeness and end-to-end verification remain outstanding. Travel, referral/loyalty, streak rewards, and Clario Mind remain requirements/planning until implemented and tested.
+- Social Studio has partial implementation on `#social` (see screen 19): text posts, stories, follow requests, reactions/comments, blocks/mutes/reports, outgoing follow management, and owner moderation UI are present in code; full browser verification remains outstanding.
+- Profile Studio has editable display name, username, bio, interests, visibility preference, and private avatar/cover upload/removal UI. Migration `202610240006_private_profile_media.sql` defines a private bucket with owner-scoped policies; it has not been validated against a real Supabase staging project. Post/story media remains unsupported.
+- Travel, referral/loyalty, streak rewards, and Clario Mind remain requirements/planning until implemented and tested.
