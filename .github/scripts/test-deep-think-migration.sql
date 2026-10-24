@@ -10,22 +10,21 @@ select public.submit_deep_think_case(
   'Family commitments',
   'Relocation risk',
   'CI integration test'
-) as case_id \gset
-reset role;
+);
 do $$
+declare v_case_id uuid;
 begin
-  if not exists (
-    select 1 from public.deep_think_cases
-    where id = :'case_id'::uuid
-      and user_id = '10000000-0000-4000-8000-000000000001'
-      and status = 'submitted'
-  ) then
-    raise exception 'Submission did not create an owned submitted case';
+  select id into v_case_id from public.deep_think_cases
+  where title = 'Should I accept the new role?'
+    and user_id = '10000000-0000-4000-8000-000000000001'
+  order by created_at desc limit 1;
+  if v_case_id is null then
+    raise exception 'Submission did not create an owned case';
   end if;
-  if not exists (
-    select 1 from public.deep_think_case_events
-    where case_id = :'case_id'::uuid and event_type = 'submitted'
-  ) then
+  if not exists (select 1 from public.deep_think_cases where id=v_case_id and status='submitted') then
+    raise exception 'New case must start in submitted status';
+  end if;
+  if not exists (select 1 from public.deep_think_case_events where case_id=v_case_id and event_type='submitted') then
     raise exception 'Submission audit event missing';
   end if;
 end $$;
