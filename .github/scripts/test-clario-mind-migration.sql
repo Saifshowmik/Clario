@@ -24,10 +24,10 @@ select count(*) as saved_count from public.clario_mind_list_sessions() \gset
 reset role;
 -- Verify temporary record has expiry and saved record does not.
 do $$ begin
- if not exists(select 1 from public.mind_sessions where id=:'saved_id'::uuid and expires_at is null) then
+ if not exists(select 1 from public.mind_sessions where user_id='10000000-0000-4000-8000-000000000001' and note='test saved session' and expires_at is null) then
    raise exception 'Saved session expiry must be null';
  end if;
- if not exists(select 1 from public.mind_sessions where id=:'temporary_id'::uuid and expires_at>now()) then
+ if not exists(select 1 from public.mind_sessions where user_id='10000000-0000-4000-8000-000000000001' and note='temporary session' and expires_at>now()) then
    raise exception 'Temporary session must expire in the future';
  end if;
 end $$;
