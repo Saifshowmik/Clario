@@ -10,7 +10,7 @@ create table if not exists public.social_reports (
   id uuid primary key default gen_random_uuid(),
   reporter_id uuid not null references public.profiles(id) on delete cascade,
   reported_user_id uuid references public.profiles(id) on delete set null,
-  post_id uuid references public.social_posts(id) on delete set null,
+  post_id uuid, -- retain the reported post identifier even if the post is later deleted
   reason text not null check (reason in ('spam','harassment','hate','sexual_content','violence','self_harm','impersonation','other')),
   details text not null default '' check (char_length(details) <= 1500),
   status text not null default 'open' check (status in ('open','reviewing','resolved','dismissed')),
