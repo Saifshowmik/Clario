@@ -57,6 +57,17 @@
     requestsRefresh.addEventListener("click", loadFollowRequests);
     requestsPanel.appendChild(requestsRefresh); requestsPanel.appendChild(requestsStatus); requestsPanel.appendChild(requestsList);
     section.appendChild(requestsPanel);
+    var followingPanel = el("div", { className: "panel" });
+    followingPanel.appendChild(el("h3", {}, "Following and outgoing requests"));
+    followingPanel.appendChild(el("p", { className: "sub" }, "Manage accepted follows and cancel pending requests. Member IDs are shown partially to avoid exposing profile details here."));
+    var followingStatus = el("p", { id: "social-following-status", role: "status", className: "sub" }, "");
+    var followingList = el("div", { id: "social-following-list" });
+    var followingRefresh = el("button", { type: "button", className: "btn s" }, "Refresh following");
+    followingRefresh.addEventListener("click", loadFollowing);
+    followingPanel.appendChild(followingRefresh);
+    followingPanel.appendChild(followingStatus);
+    followingPanel.appendChild(followingList);
+    section.appendChild(followingPanel);
     var safetyPanel = el("div", { className: "panel" });
     safetyPanel.appendChild(el("h3", {}, "Safety controls"));
     var safetyUsername = el("input", { id: "social-safety-username", type: "text", maxlength: "24", placeholder: "Username to block or mute", style: "width:100%;min-height:48px;background:var(--nv);color:#fff;border:1px solid var(--cb);border-radius:12px;padding:8px 12px;font:inherit" });
@@ -258,6 +269,36 @@
         list.appendChild(card);
       });
     });
+  }
+  function loadFollowing() {
+    var ctx = clientAndUser(), list = document.getElementById("social-following-list");
+    if (!list) return;
+    list.textContent = "";
+    if (!ctx.client || !ctx.user) { status("social-following-status", "Sign in to manage following.", false); return; }
+    ctx.client.from("social_follows").select("id,requester_id,target_id,status,created_at")
+      .eq("requester_id", ctx.user.id).in("status", ["pending","accepted"])
+      .order("created_at", { ascending: false }).limit(100)
+      .then(function (res) {
+        if (res.error) { status("social-following-status", "Following list unavailable until social migrations are applied.", false); return; }
+        var rows = res.data || [];
+        if (!rows.length) { status("social-following-status", "You are not following anyone and have no outgoing requests.", true); return; }
+        status("social-following-status", rows.length + " outgoing follow(s)/request(s).", true);
+        rows.forEach(function (follow) {
+          var row = el("div", { className: "panel", style: "margin:8px 0;padding:12px" });
+          var target = follow.target_id || "";
+          row.appendChild(el("p", {}, "Member · " + (target ? target.slice(0,8) + "…" : "unknown") + " · " + follow.status));
+          var remove = el("button", { type: "button", className: "btn s" }, follow.status === "pending" ? "Cancel request" : "Unfollow");
+          remove.addEventListener("click", function () {
+            if (!window.confirm(follow.status === "pending" ? "Cancel this follow request?" : "Unfollow this member?")) return;
+            ctx.client.from("social_follows").delete().eq("id", follow.id).eq("requester_id", ctx.user.id)
+              .then(function (done) {
+                if (done.error) { status("social-following-status", "Could not update following: " + done.error.message, false); return; }
+                loadFollowing();
+              });
+          });
+          row.appendChild(remove); list.appendChild(row);
+        });
+      });
   }
   function requestFollow(rawUsername) {
     var ctx = clientAndUser(), name = (rawUsername || "").trim().replace(/^@/, "").toLowerCase();
