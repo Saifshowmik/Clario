@@ -19,8 +19,8 @@ Do not mark a screen implemented merely because a link or placeholder exists. A 
 | 9 | Customer · Dashboard | TBD | Not started | Map to PDF page 14; verify actual PDF page before implementation. |
 | 10 | Customer · My Profiles | TBD | Not started | Map to PDF page 15; verify actual PDF page before implementation. |
 | 11 | Mobile · Menu & bottom nav | TBD | Not started | Map to PDF page 16; verify actual PDF page before implementation. |
-| 12 | Customer · AI Decision Studio | TBD | Not started | Map to PDF page 17; verify actual PDF page before implementation. |
-| 13 | Admin · Dashboard | TBD | Not started | Map to PDF page 18; verify actual PDF page before implementation. |
+| 12 | Customer · AI Decision Studio | `#decide` + Deep Think board | In progress | Existing decision form remains; Deep Think module is wired but not runtime-verified. Map to PDF page 17; verify actual PDF page before implementation. |
+| 13 | Admin · Dashboard | `#admin` + Deep Think review queue | In progress | Existing owner console remains; Deep Think queue requires staging role and browser tests. Map to PDF page 18; verify actual PDF page before implementation. |
 | 14 | Customer · Recommendation results | TBD | Not started | Map to PDF page 19; verify actual PDF page before implementation. |
 | 15 | Customer · Life Partner / Match questions | TBD | Not started | Map to PDF page 20; verify actual PDF page before implementation. |
 | 16 | Customer · Settings & Privacy | TBD | Not started | Map to PDF page 21; verify actual PDF page before implementation. |
