@@ -94,3 +94,21 @@ using (
     or (audience='followers' and exists(select 1 from public.social_follows f where f.requester_id=auth.uid() and f.target_id=author_id and f.status='accepted'))
   )
 );
+
+-- Only a verified owner can resolve reports; client users cannot edit report status directly.
+create or replace function public.review_social_report(p_report_id uuid, p_status text)
+returns void language plpgsql security definer set search_path=public,pg_temp as $$
+begin
+  if auth.uid() is null or not exists(select 1 from public.profiles where id=auth.uid() and role='owner') then
+    raise exception 'Owner access required';
+  end if;
+  if p_status not in ('reviewing','resolved','dismissed') then
+    raise exception 'Invalid moderation status';
+  end if;
+  update public.social_reports
+    set status=p_status, reviewed_at=now(), reviewed_by=auth.uid()
+    where id=p_report_id;
+  if not found then raise exception 'Report not found'; end if;
+end $$;
+revoke all on function public.review_social_report(uuid,text) from public;
+grant execute on function public.review_social_report(uuid,text) to authenticated;
