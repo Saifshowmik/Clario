@@ -55,3 +55,12 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-social-core-migration.sql
+
+      - name: Apply social safety migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240004_social_safety.sql
+      - name: Verify social safety policies and RPCs
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-social-safety-migration.sql
