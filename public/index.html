@@ -116,6 +116,7 @@ footer{background:var(--dd);text-align:center;color:var(--t2);font-size:14px;pad
       </div>
       <div id="rows"></div>
       <button class="btn" id="go" type="button" data-i="go" style="margin-inline:0"></button>
+      <button class="btn s" id="deep-think-start" type="button" style="margin-inline:0">Request human-only Deep Think</button>
       <div class="err" id="err" role="alert"></div>
       <div id="out" aria-live="polite"></div>
     </div>
@@ -339,5 +340,6 @@ apply();
 go((location.hash||"").slice(1)||"home");
 sync();
 </script>
+<script src="deep-think.js"></script>
 </body>
 </html>
