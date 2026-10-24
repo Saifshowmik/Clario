@@ -94,7 +94,15 @@
     var open = el("button", { type: "button", className: "btn s" }, "Open Clario Social");
     open.addEventListener("click", function () { window.go("social"); loadFeed(); });
     var dashboard = document.getElementById("p-dash");
-    if (dashboard) { var target = dashboard.querySelector("section"); if (target) target.appendChild(open); }
+    if (dashboard) {
+      var target = dashboard.querySelector("section");
+      if (target) {
+        target.appendChild(open);
+        var profileOpen = el("button", { type: "button", className: "btn s" }, "Edit my profile");
+        profileOpen.addEventListener("click", function () { window.go("profile"); });
+        target.appendChild(profileOpen);
+      }
+    }
     back.addEventListener("click", function () { window.go("dash"); });
     refresh.addEventListener("click", loadFeed);
     post.addEventListener("click", publish);
