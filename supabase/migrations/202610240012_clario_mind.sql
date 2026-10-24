@@ -18,7 +18,8 @@ alter table public.mind_sessions enable row level security;
 drop policy if exists mind_sessions_select_own on public.mind_sessions;
 create policy mind_sessions_select_own on public.mind_sessions for select to authenticated using(user_id=auth.uid() and session_mode='saved');
 drop policy if exists mind_sessions_insert_own on public.mind_sessions;
-create policy mind_sessions_insert_own on public.mind_sessions for insert to authenticated with check(user_id=auth.uid());
+create policy mind_sessions_insert_own on public.mind_sessions for insert to authenticated
+ with check(user_id=auth.uid() and age_band='18_plus' and session_mode='saved' and expires_at is null);
 drop policy if exists mind_sessions_delete_own on public.mind_sessions;
 create policy mind_sessions_delete_own on public.mind_sessions for delete to authenticated using(user_id=auth.uid());
 revoke all on public.mind_sessions from anon;
