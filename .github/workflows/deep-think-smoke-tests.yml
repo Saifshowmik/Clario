@@ -22,6 +22,7 @@ jobs:
           node --check public/profile-studio.js
           node --check public/social-studio.js
           node --check public/travel-studio.js
+          node --check public/rewards-studio.js
           grep -q 'SOCIAL_MEDIA_MAX_BYTES = 8 \* 1024 \* 1024' public/social-studio.js
           grep -q 'function validateSocialImage' public/social-studio.js
           grep -q 'function loadStories' public/social-studio.js
@@ -33,6 +34,15 @@ jobs:
           grep -q 'data-go="travel"' public/index.html
           grep -q '<script src="travel-studio.js"></script>' public/index.html
           grep -q 'enable row level security' supabase/migrations/202610240008_travel_planner.sql
+          grep -q 'clario_ensure_referral_code' supabase/migrations/202610240009_referrals_loyalty.sql
+          grep -q 'clario_apply_referral' supabase/migrations/202610240009_referrals_loyalty.sql
+          grep -q 'clario_process_paid_reward' supabase/migrations/202610240009_referrals_loyalty.sql
+          grep -q "new.status='approved' and old.status is distinct from 'approved'" supabase/migrations/202610240009_referrals_loyalty.sql
+          grep -q "v_ref.referred_id,'referral_credit'" supabase/migrations/202610240009_referrals_loyalty.sql
+          grep -q 'reward_ledger' public/rewards-studio.js
+          grep -q 'clario_apply_referral' public/rewards-studio.js
+          grep -q 'data-go="rewards"' public/index.html
+          grep -q '<script src="rewards-studio.js"></script>' public/index.html
           grep -q 'using (user_id=auth.uid())' supabase/migrations/202610240008_travel_planner.sql
           grep -q "values ('social-media','social-media',false,8388608" supabase/migrations/202610240007_social_media.sql
           grep -q "allowed_mime_types=array\['image/jpeg','image/png','image/webp'\]" supabase/migrations/202610240007_social_media.sql
