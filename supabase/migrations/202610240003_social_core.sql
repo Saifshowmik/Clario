@@ -100,6 +100,88 @@ create policy social_blocks_read_own on public.social_blocks for select to authe
 create policy social_blocks_insert_own on public.social_blocks for insert to authenticated with check (blocker_id=auth.uid());
 create policy social_blocks_delete_own on public.social_blocks for delete to authenticated using (blocker_id=auth.uid());
 
+create or replace function public.request_social_follow(p_username text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $
+declare
+  v_target uuid;
+  v_request uuid;
+begin
+  if auth.uid() is null then raise exception 'Sign in required'; end if;
+  if p_username is null or lower(trim(p_username)) !~ '^[a-z0-9_]{3,24} on public.social_follows for select to authenticated
+using (requester_id=auth.uid() or target_id=auth.uid());
+create policy social_follows_request_own on public.social_follows for insert to authenticated
+with check (requester_id=auth.uid() and not public.clario_social_is_blocked(auth.uid(),target_id));
+create policy social_follows_update_target on public.social_follows for update to authenticated
+using (target_id=auth.uid()) with check (target_id=auth.uid() and status in ('accepted','rejected'));
+create policy social_follows_delete_participant on public.social_follows for delete to authenticated
+using (requester_id=auth.uid() or target_id=auth.uid());
+
+-- Private profiles remain invisible to non-followers. Accepted followers can see followers-only posts.
+create policy social_posts_read_audience on public.social_posts for select to authenticated
+using (
+  status='published'
+  and not public.clario_social_is_blocked(auth.uid(),author_id)
+  and (
+    author_id=auth.uid()
+    or (audience='public' and exists(select 1 from public.profiles p where p.id=author_id and p.profile_visibility='public'))
+    or (audience='followers' and exists(select 1 from public.social_follows f where f.requester_id=auth.uid() and f.target_id=author_id and f.status='accepted'))
+  )
+);
+create policy social_posts_insert_own on public.social_posts for insert to authenticated
+with check (author_id=auth.uid());
+create policy social_posts_update_own on public.social_posts for update to authenticated
+using (author_id=auth.uid()) with check (author_id=auth.uid());
+create policy social_posts_delete_own on public.social_posts for delete to authenticated using (author_id=auth.uid());
+
+create policy social_comments_read_visible_post on public.social_comments for select to authenticated
+using (exists(select 1 from public.social_posts p where p.id=post_id));
+create policy social_comments_insert_visible_post on public.social_comments for insert to authenticated
+with check (author_id=auth.uid() and exists(select 1 from public.social_posts p where p.id=post_id));
+create policy social_comments_delete_own on public.social_comments for delete to authenticated using (author_id=auth.uid());
+
+create policy social_reactions_read_visible_post on public.social_reactions for select to authenticated
+using (exists(select 1 from public.social_posts p where p.id=post_id));
+create policy social_reactions_insert_own on public.social_reactions for insert to authenticated
+with check (user_id=auth.uid() and exists(select 1 from public.social_posts p where p.id=post_id));
+create policy social_reactions_delete_own on public.social_reactions for delete to authenticated using (user_id=auth.uid());
+
+create policy social_stories_read_active_audience on public.social_stories for select to authenticated
+using (
+  expires_at > now()
+  and not public.clario_social_is_blocked(auth.uid(),author_id)
+  and (
+    author_id=auth.uid()
+    or (audience='public' and exists(select 1 from public.profiles p where p.id=author_id and p.profile_visibility='public'))
+    or (audience='followers' and exists(select 1 from public.social_follows f where f.requester_id=auth.uid() and f.target_id=author_id and f.status='accepted'))
+  )
+);
+create policy social_stories_insert_own on public.social_stories for insert to authenticated with check (author_id=auth.uid());
+create policy social_stories_delete_own on public.social_stories for delete to authenticated using (author_id=auth.uid());
+
+comment on table public.social_posts is 'Text-only social posts foundation. Add signed media storage and moderation before enabling media uploads.';
+comment on table public.social_stories is 'Stories expire after 24 hours; client queries must filter expires_at > now().';
+ then
+    raise exception 'Invalid username';
+  end if;
+  select id into v_target from public.profiles where lower(username)=lower(trim(p_username)) and id <> auth.uid();
+  if v_target is null then raise exception 'No account found for that username'; end if;
+  if public.clario_social_is_blocked(auth.uid(),v_target) then raise exception 'Follow request unavailable'; end if;
+  insert into public.social_follows(requester_id,target_id,status)
+    values(auth.uid(),v_target,'pending')
+    on conflict(requester_id,target_id) do update
+      set status=case when public.social_follows.status='rejected' then 'pending' else public.social_follows.status end,
+          updated_at=now()
+    returning id into v_request;
+  return v_request;
+end;
+$;
+revoke all on function public.request_social_follow(text) from public;
+grant execute on function public.request_social_follow(text) to authenticated;
+
 create policy social_follows_read_participants on public.social_follows for select to authenticated
 using (requester_id=auth.uid() or target_id=auth.uid());
 create policy social_follows_request_own on public.social_follows for insert to authenticated
