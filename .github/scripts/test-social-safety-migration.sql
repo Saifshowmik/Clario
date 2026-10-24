@@ -64,12 +64,12 @@ end $$;
 -- Owner can resolve a report; normal users cannot.
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000002',false);
 set role authenticated;
-do $
+do $$
 begin
   if (select count(*) from public.list_social_reports()) < 1 then
     raise exception 'Owner moderation queue did not return the open report';
   end if;
-end $;
+end $$;
 select public.review_social_report(
   (select id from public.social_reports where reason='spam' limit 1),
   'resolved'
