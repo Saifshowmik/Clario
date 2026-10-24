@@ -39,6 +39,7 @@ create table storage.objects (
   bucket_id text not null,
   name text not null
 );
+alter table storage.objects enable row level security;
 grant usage on schema storage to authenticated;
 grant select, insert, update, delete on storage.objects to authenticated;
 create or replace function storage.foldername(name text)
