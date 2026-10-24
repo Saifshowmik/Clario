@@ -22,7 +22,9 @@ create index if not exists deep_think_cases_user_created_idx on public.deep_thin
 create index if not exists deep_think_cases_status_created_idx on public.deep_think_cases(status, created_at);
 alter table public.deep_think_cases enable row level security;
 revoke all on public.deep_think_cases from anon, authenticated;
-grant select on public.deep_think_cases to authenticated;
+-- Column-level grants intentionally exclude internal_note from all client reads.
+grant select (id,user_id,title,background,goals,options_text,constraints_text,risks,additional_text,status,final_decision,created_at,updated_at,reviewed_by,reviewed_at)
+on public.deep_think_cases to authenticated;
 
 create or replace function public.clario_can_review_deep_think()
 returns boolean language sql stable security definer set search_path = public, pg_temp as $$
