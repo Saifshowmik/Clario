@@ -13,7 +13,7 @@ select public.submit_deep_think_case(
   'CI integration test'
 );
 reset role;
-do $
+do $$
 declare v_case_id uuid;
 begin
   select id into v_case_id from public.deep_think_cases
