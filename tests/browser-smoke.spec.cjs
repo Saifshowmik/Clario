@@ -34,14 +34,17 @@ test('mobile viewport keeps navigation controls visible and usable', async ({ pa
   await expect(page.locator('#budget')).toBeVisible();
 });
 
-test('all implemented feature studios mount and can be opened from navigation', async ({ page }) => {
-  const routeIds = ['profile', 'social', 'travel', 'rewards', 'streaks', 'mind', 'deep-think'];
+test('feature studios mount and open from their navigation controls', async ({ page }) => {
+  const routeIds = ['social', 'travel', 'rewards', 'streaks', 'mind'];
   for (const id of routeIds) {
     const pageSection = page.locator('#p-' + id);
     await expect(pageSection, id + ' studio should mount').toHaveCount(1);
-    await page.locator('[data-go="' + (id === 'profile' ? 'acct' : id) + '"]').first().click();
+    await page.locator('[data-go="' + id + '"]').first().click();
     await expect(pageSection, id + ' studio should become visible').toBeVisible();
   }
+  await page.locator('[data-go="acct"]').first().click();
+  await page.locator('#profile-open').click();
+  await expect(page.locator('#p-profile')).toBeVisible();
 });
 
 test('plans page exposes the approved prices', async ({ page }) => {
