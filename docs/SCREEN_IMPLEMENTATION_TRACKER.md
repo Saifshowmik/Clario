@@ -26,7 +26,7 @@ Do not mark a screen implemented merely because a link or placeholder exists. A 
 | 16 | Customer · Settings & Privacy | TBD | Not started | Map to PDF page 21; verify actual PDF page before implementation. |
 | 17 | Public · Pricing | TBD | Not started | Map to PDF page 22; verify actual PDF page before implementation. |
 | 18 | Customer · Upgrade & payments | TBD | Not started | Map to PDF page 23; verify actual PDF page before implementation. |
-| 19 | Public · Community forum | TBD | Not started | Map to PDF page 24; verify actual PDF page before implementation. |
+| 19 | Public · Community forum | `#social` / Social Studio | In progress | Text posts, 24-hour text stories, follow requests, block/mute, post/user reports, and owner moderation UI exist; media, full comments/shares, responsive visual comparison, and runtime verification remain. Map to PDF page 24; verify actual PDF page before implementation. |
 | 20 | Public · Expert Blog | TBD | Not started | Map to PDF page 25; verify actual PDF page before implementation. |
 | 21 | Public · About Clario | TBD | Not started | Map to PDF page 26; verify actual PDF page before implementation. |
 | 22 | Public · Contact & Support | TBD | Not started | Map to PDF page 27; verify actual PDF page before implementation. |
@@ -167,4 +167,4 @@ The existing website is a static HTML/CSS/JavaScript app under `public/`, deploy
 - **Deep Think database migration — drafted, not applied:** `supabase/migrations/202610240001_deep_think.sql` defines case submission and admin/owner review functions. Column-level read permissions exclude internal reviewer notes.
 - **Not yet verified:** browser behavior, SQL execution on staging, authorization tests, and end-to-end user/admin flows.
 - **Not deployed:** production branch `main` and the live GitHub Pages website have not been changed by this work.
-- Other new feature groups (social profiles/stories, travel, referral/loyalty, streak rewards, and Clario Mind) remain requirements/planning until implemented and tested.
+- Social Studio has partial implementation on `#social` (see screen 19); profile/media completeness and end-to-end verification remain outstanding. Travel, referral/loyalty, streak rewards, and Clario Mind remain requirements/planning until implemented and tested.
