@@ -25,7 +25,7 @@ jobs:
           grep -q 'id="deep-think-start"' public/index.html
           grep -q '<script src="deep-think.js"></script>' public/index.html
           grep -q '<script src="profile-studio.js"></script>' public/index.html
-          grep -q 'id="profile-studio-open"' public/profile-studio.js
+          grep -q 'Edit social profile' public/profile-studio.js
           grep -q 'profile_visibility' public/profile-studio.js
           grep -q 'submit_deep_think_case' public/deep-think.js
           grep -q 'review_deep_think_case' public/deep-think.js
