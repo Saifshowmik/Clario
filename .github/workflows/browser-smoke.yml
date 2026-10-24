@@ -1,0 +1,33 @@
+name: Clario browser smoke tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feature/full-platform-recovery]
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm install --no-save @playwright/test
+          npx playwright install --with-deps chromium
+      - name: Start static site
+        run: |
+          python3 -m http.server 4173 --directory public > /tmp/clario-http.log 2>&1 &
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/clario-http.log
+          exit 1
+      - name: Run browser smoke tests
+        run: npx playwright test tests/browser-smoke.spec.cjs --reporter=line
