@@ -1,0 +1,41 @@
+name: Clario Deep Think database integration
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feature/full-platform-recovery]
+
+jobs:
+  postgres-migration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: clario_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d clario_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Create isolated Supabase auth/profile fixture
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/deep-think-ci-fixture.sql
+      - name: Apply Deep Think migration to disposable database
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240001_deep_think.sql
+      - name: Verify submission and audit event
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-deep-think-migration.sql
