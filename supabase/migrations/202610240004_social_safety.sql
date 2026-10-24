@@ -120,7 +120,7 @@ returns table (
 )
 language plpgsql stable security definer set search_path=public,pg_temp as $$
 begin
-  if auth.uid() is null or not exists(select 1 from public.profiles where id=auth.uid() and role='owner') then
+  if auth.uid() is null or not exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='owner') then
     raise exception 'Owner access required';
   end if;
   return query
