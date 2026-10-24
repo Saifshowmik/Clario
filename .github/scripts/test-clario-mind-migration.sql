@@ -24,11 +24,22 @@ begin
 end
 $test$;
 -- Saved history should contain exactly the user's saved session.
-select count(*) as saved_count from public.clario_mind_list_sessions() \gset
-\if :saved_count != 1
+select (count(*) = 1) as saved_ok from public.clario_mind_list_sessions() \gset
+\if :saved_ok
   \echo 'Expected exactly one saved session'
   \quit 1
 \endif
+-- Saved sessions have no expiry; temporary reflections are never persisted.
+do $test$
+begin
+ if not exists(select 1 from public.mind_sessions where user_id='10000000-0000-4000-8000-000000000001' and note='test saved session' and expires_at is null) then
+   raise exception 'Saved session expiry must be null';
+ end if;
+ if exists(select 1 from public.mind_sessions where user_id='10000000-0000-4000-8000-000000000001' and note='temporary test') then
+   raise exception 'Temporary reflection must not be persisted';
+ end if;
+end
+$test$;
 -- User can delete their own saved session.
 set local request.jwt.claim.sub = '10000000-0000-4000-8000-000000000001';
 set local role authenticated;
@@ -41,22 +52,11 @@ begin
  end if;
 end
 $test$;
--- Saved sessions have no expiry; temporary reflections are never persisted.
-do $test$
-begin
- if not exists(select 1 from public.mind_sessions where user_id='10000000-0000-4000-8000-000000000001' and note='test saved session' and expires_at is null) then
-   raise exception 'Saved session expiry must be null';
- end if;
- if exists(select 1 from public.mind_sessions where user_id='10000000-0000-4000-8000-000000000001' and note='temporary test') then
-   raise exception 'Temporary reflection must not be persisted';
- end if;
-end
-$test$;
 -- Other user cannot list the first user's saved history.
 set local request.jwt.claim.sub = '10000000-0000-4000-8000-000000000003';
 set local role authenticated;
-select count(*) as other_count from public.clario_mind_list_sessions() \gset
-\if :other_count != 0
+select (count(*) = 0) as other_ok from public.clario_mind_list_sessions() \gset
+\if :other_ok
   \echo 'Other user can see saved history'
   \quit 1
 \endif
