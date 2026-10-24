@@ -71,7 +71,7 @@ begin
   end if;
 end $$;
 select public.review_social_report(
-  (select id from public.social_reports where reason='spam' limit 1),
+  (select id from public.list_social_reports() where reason='spam' limit 1),
   'resolved'
 );
 reset role;
