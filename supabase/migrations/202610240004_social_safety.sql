@@ -33,3 +33,64 @@ grant select, insert, delete on public.social_mutes to authenticated;
 create index if not exists social_reports_open_created_idx on public.social_reports(status,created_at desc);
 create index if not exists social_mutes_lookup_idx on public.social_mutes(muter_id,muted_id);
 comment on table public.social_reports is 'User reports are private to the reporter; status changes require trusted moderation tooling.';
+
+-- Username resolution exposes only the target UUID, never private profile fields.
+create or replace function public.resolve_social_username(p_username text)
+returns uuid language plpgsql stable security definer set search_path=public,pg_temp as $$
+declare v_target uuid;
+begin
+  if auth.uid() is null then raise exception 'Sign in required'; end if;
+  if p_username is null or lower(trim(p_username)) !~ '^[a-z0-9_]{3,24}$' then raise exception 'Invalid username'; end if;
+  select id into v_target from public.profiles where lower(username)=lower(trim(p_username)) and id<>auth.uid();
+  if v_target is null then raise exception 'No available member found'; end if;
+  if public.clario_social_is_blocked(auth.uid(),v_target) then raise exception 'No available member found'; end if;
+  return v_target;
+end $$;
+revoke all on function public.resolve_social_username(text) from public;
+grant execute on function public.resolve_social_username(text) to authenticated;
+
+create or replace function public.block_social_member(p_username text)
+returns void language plpgsql security definer set search_path=public,pg_temp as $$
+declare v_target uuid;
+begin
+  v_target := public.resolve_social_username(p_username);
+  insert into public.social_blocks(blocker_id,blocked_id) values(auth.uid(),v_target) on conflict do nothing;
+  delete from public.social_follows where (requester_id=auth.uid() and target_id=v_target) or (requester_id=v_target and target_id=auth.uid());
+end $$;
+revoke all on function public.block_social_member(text) from public;
+grant execute on function public.block_social_member(text) to authenticated;
+
+create or replace function public.mute_social_member(p_username text)
+returns void language plpgsql security definer set search_path=public,pg_temp as $$
+declare v_target uuid;
+begin
+  v_target := public.resolve_social_username(p_username);
+  insert into public.social_mutes(muter_id,muted_id) values(auth.uid(),v_target) on conflict do nothing;
+end $$;
+revoke all on function public.mute_social_member(text) from public;
+grant execute on function public.mute_social_member(text) to authenticated;
+
+drop policy if exists social_posts_read_audience on public.social_posts;
+create policy social_posts_read_audience on public.social_posts for select to authenticated
+using (
+  status='published'
+  and not public.clario_social_is_blocked(auth.uid(),author_id)
+  and not exists(select 1 from public.social_mutes m where m.muter_id=auth.uid() and m.muted_id=author_id)
+  and (
+    author_id=auth.uid()
+    or (audience='public' and exists(select 1 from public.profiles p where p.id=author_id and p.profile_visibility='public'))
+    or (audience='followers' and exists(select 1 from public.social_follows f where f.requester_id=auth.uid() and f.target_id=author_id and f.status='accepted'))
+  )
+);
+drop policy if exists social_stories_read_active_audience on public.social_stories;
+create policy social_stories_read_active_audience on public.social_stories for select to authenticated
+using (
+  expires_at > now()
+  and not public.clario_social_is_blocked(auth.uid(),author_id)
+  and not exists(select 1 from public.social_mutes m where m.muter_id=auth.uid() and m.muted_id=author_id)
+  and (
+    author_id=auth.uid()
+    or (audience='public' and exists(select 1 from public.profiles p where p.id=author_id and p.profile_visibility='public'))
+    or (audience='followers' and exists(select 1 from public.social_follows f where f.requester_id=auth.uid() and f.target_id=author_id and f.status='accepted'))
+  )
+);
