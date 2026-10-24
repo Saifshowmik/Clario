@@ -17,11 +17,16 @@ jobs:
         with:
           node-version: 22
       - name: Check JavaScript syntax
-        run: node --check public/deep-think.js
+        run: |
+          node --check public/deep-think.js
+          node --check public/profile-studio.js
       - name: Verify Deep Think is wired into the app
         run: |
           grep -q 'id="deep-think-start"' public/index.html
           grep -q '<script src="deep-think.js"></script>' public/index.html
+          grep -q '<script src="profile-studio.js"></script>' public/index.html
+          grep -q 'id="profile-studio-open"' public/profile-studio.js
+          grep -q 'profile_visibility' public/profile-studio.js
           grep -q 'submit_deep_think_case' public/deep-think.js
           grep -q 'review_deep_think_case' public/deep-think.js
       - name: Verify Deep Think does not explicitly call AI services
@@ -36,6 +41,12 @@ jobs:
           grep -q 'deep_think_case_events' supabase/migrations/202610240001_deep_think.sql
           ! grep -E 'grant select .*internal_note' supabase/migrations/202610240001_deep_think.sql
           test "$(grep -Fc 'end $$;' supabase/migrations/202610240001_deep_think.sql)" -eq 2
+      - name: Verify profile privilege protection migration
+        run: |
+          grep -q "create trigger clario_guard_profile_privileges" supabase/migrations/202610240002_social_profile_foundation.sql
+          grep -q "new.role is distinct from old.role" supabase/migrations/202610240002_social_profile_foundation.sql
+          grep -q "new.plan is distinct from old.plan" supabase/migrations/202610240002_social_profile_foundation.sql
+          grep -q "profile_visibility" supabase/migrations/202610240002_social_profile_foundation.sql
       - name: Verify screen tracker preserves all designs
         run: test "$(grep -Ec '^\| [0-9]+ \|' docs/SCREEN_IMPLEMENTATION_TRACKER.md)" -eq 135
 
