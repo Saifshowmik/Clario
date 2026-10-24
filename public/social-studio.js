@@ -75,6 +75,14 @@
     safetyPanel.appendChild(safetyUsername); safetyPanel.appendChild(safetyButtons);
     safetyPanel.appendChild(reportReason); safetyPanel.appendChild(reportDetails); safetyPanel.appendChild(reportButton); safetyPanel.appendChild(safetyStatus);
     section.appendChild(safetyPanel);
+    var moderationPanel = el("div", { className: "panel" });
+    moderationPanel.appendChild(el("h3", {}, "Moderation queue (owners only)"));
+    var moderationStatus = el("p", { id: "social-moderation-status", role: "status", className: "sub" }, "Owner access required.");
+    var moderationList = el("div", { id: "social-moderation-list" });
+    var moderationRefresh = el("button", { type: "button", className: "btn s" }, "Load reports");
+    moderationRefresh.addEventListener("click", loadModerationQueue);
+    moderationPanel.appendChild(moderationRefresh); moderationPanel.appendChild(moderationStatus); moderationPanel.appendChild(moderationList);
+    section.appendChild(moderationPanel);
     var feed = el("div", { className: "panel" });
     feed.appendChild(el("h3", {}, "Your feed"));
     var feedStatus = el("p", { id: "social-feed-status", role: "status", className: "sub" }, "");
@@ -215,6 +223,33 @@
       document.getElementById("social-report-details").value = "";
       status("social-safety-status", "Report submitted privately for moderator review.", true);
     }).catch(function (e) { status("social-safety-status", e.message || "Could not submit report.", false); });
+  }
+  function loadModerationQueue() {
+    var ctx = clientAndUser(), list = document.getElementById("social-moderation-list");
+    if (!ctx.client || !ctx.user || !list) { status("social-moderation-status", "Sign in with the owner account to review reports.", false); return; }
+    list.replaceChildren(); status("social-moderation-status", "Loading moderation queue…", true);
+    ctx.client.rpc("list_social_reports").then(function (res) {
+      if (res.error) { status("social-moderation-status", "Owner-only moderation queue unavailable: " + (res.error.message || "access denied"), false); return; }
+      var rows = res.data || [];
+      if (!rows.length) { status("social-moderation-status", "No open reports.", true); return; }
+      status("social-moderation-status", rows.length + " report(s) awaiting review.", true);
+      rows.forEach(function (report) {
+        var card = el("article", { className: "panel" });
+        card.appendChild(el("p", {}, report.reason + " · " + report.status + " · " + new Date(report.created_at).toLocaleString()));
+        if (report.details) card.appendChild(el("p", {}, report.details));
+        ["reviewing","resolved","dismissed"].forEach(function (nextStatus) {
+          var b = el("button", { type: "button", className: "btn s" }, nextStatus);
+          b.addEventListener("click", function () {
+            ctx.client.rpc("review_social_report", { p_report_id: report.id, p_status: nextStatus }).then(function (done) {
+              if (done.error) status("social-moderation-status", done.error.message || "Could not update report.", false);
+              else loadModerationQueue();
+            });
+          });
+          card.appendChild(b);
+        });
+        list.appendChild(card);
+      });
+    });
   }
   function requestFollow(rawUsername) {
     var ctx = clientAndUser(), name = (rawUsername || "").trim().replace(/^@/, "").toLowerCase();
