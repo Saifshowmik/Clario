@@ -31,7 +31,8 @@
     section.appendChild(node("h2", {}, "Profile Studio"));
     section.appendChild(node("p", { className: "sub" }, "Choose how your Clario profile appears. Profile visibility is enforced by database policies. Private is the safest default; only share information you intend the selected audience to see."));
     var panel = node("div", { className: "panel" });
-    panel.appendChild(node("p", { className: "sub" }, "Your name, username, bio, interests, and visibility can be edited here. Account role and subscription plan are intentionally not editable."));
+    panel.appendChild(node("p", { className: "sub" }, "Your display name, username, bio, interests, and visibility can be edited here. Account role and subscription plan are intentionally not editable."));
+    var displayName = field(panel, "Display name", "profile-display-name", "text", "", "Name shown on your profile (max 80 characters)");
     var username = field(panel, "Username", "profile-username", "text", "", "3–24 characters: letters, numbers, underscores");
     var bio = field(panel, "Bio", "profile-bio", "textarea", "", "Tell people a little about yourself (max 240 characters)");
     var interests = field(panel, "Interests (comma-separated, up to 12)", "profile-interests", "text", "", "technology, travel, learning");
@@ -67,10 +68,11 @@
   function load() {
     var client = window.sb, u = window.U;
     if (!client || !u) { say("Sign in to edit your profile.", false); return; }
-    client.from("profiles").select("username,bio,interests,profile_visibility").eq("id", u.id).maybeSingle()
+    client.from("profiles").select("display_name,username,bio,interests,profile_visibility").eq("id", u.id).maybeSingle()
       .then(function (res) {
         if (res.error) { say("Could not load profile. Apply the social profile migration to staging first.", false); return; }
         var p = res.data || {};
+        document.getElementById("profile-display-name").value = p.display_name || "";
         document.getElementById("profile-username").value = p.username || "";
         document.getElementById("profile-bio").value = p.bio || "";
         document.getElementById("profile-interests").value = Array.isArray(p.interests) ? p.interests.join(", ") : "";
@@ -81,15 +83,18 @@
   function saveProfile() {
     var client = window.sb, u = window.U;
     if (!client || !u) { say("Sign in before saving.", false); return; }
+    var displayName = document.getElementById("profile-display-name").value.trim();
     var username = document.getElementById("profile-username").value.trim().toLowerCase();
     var bio = document.getElementById("profile-bio").value.trim();
     var interests = document.getElementById("profile-interests").value.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
     var visibility = document.getElementById("profile-visibility").value;
+    if (displayName.length > 80) { say("Display name must be 80 characters or fewer.", false); return; }
     if (username && !/^[a-z0-9_]{3,24}$/.test(username)) { say("Username must be 3–24 characters using letters, numbers, or underscores.", false); return; }
     if (bio.length > 240) { say("Bio must be 240 characters or fewer.", false); return; }
     if (interests.length > 12 || interests.some(function (s) { return s.length > 40; })) { say("Use up to 12 interests, each 40 characters or fewer.", false); return; }
     say("Saving profile…", true);
     client.from("profiles").update({
+      display_name: displayName,
       username: username || null,
       bio: bio,
       interests: interests,
