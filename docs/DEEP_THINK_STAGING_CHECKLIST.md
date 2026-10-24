@@ -29,3 +29,18 @@ This feature handles private life-context submissions. Do not release it based o
 
 ## Important
 GitHub Pages publishes static frontend files only. The SQL migration is not automatically applied by the Pages deployment workflow. A missing migration should produce a controlled unavailable message, not be treated as a successful launch.
+
+
+## Next-stage source validation (2026-10-24)
+- [x] Source inspection: Deep Think entry button exists and the module is loaded by the main HTML.
+- [x] Source inspection: frontend references the submit and review RPCs.
+- [x] Source inspection: no explicit AI provider/client invocation or `fetch()` appears in the Deep Think module.
+- [x] Source inspection: cases table has RLS enabled and reviewer RPC enforces admin/owner role.
+- [x] Source inspection: client column-level select grant excludes `internal_note`.
+- [x] Source inspection: submission and review event inserts exist.
+- [x] Source inspection: smoke-test workflow includes JavaScript syntax check and security assertions.
+- [ ] **Not yet executed:** GitHub Actions job. A configured workflow is not evidence of a passing run.
+- [ ] **Not yet executed:** `node --check` in a CI runner; this environment could not fetch source from GitHub to run Node locally.
+- [ ] **Not yet executed:** migration on staging Supabase, real browser tests, and role-based live tests.
+
+These source checks validate the presence of intended safeguards only. They do not establish runtime correctness or prove that the complete application has no other path that processes Deep Think content with AI.
