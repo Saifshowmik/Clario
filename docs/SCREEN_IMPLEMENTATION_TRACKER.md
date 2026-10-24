@@ -130,17 +130,17 @@ Do not mark a screen implemented merely because a link or placeholder exists. A 
 | 120 | Korean · My Profiles | TBD | Not started | Map to PDF page 125; verify actual PDF page before implementation. |
 | 121 | Chinese · Settings & Privacy | TBD | Not started | Map to PDF page 126; verify actual PDF page before implementation. |
 | 122 | Chinese · My Profiles | TBD | Not started | Map to PDF page 127; verify actual PDF page before implementation. |
-| 123 | Clario Mind · Welcome, age, consent and privacy | TBD | Not started | Map to PDF page 128; verify actual PDF page before implementation. |
+| 123 | Clario Mind · Welcome, age, consent and privacy | `#mind` / Mind Studio | In progress | Adult-only saved-session gate and privacy disclosure exist; guardian consent and age-specific flows remain unimplemented. | Map to PDF page 128; verify actual PDF page before implementation. |
 | 124 | Clario Mind · Companion chat | TBD | Not started | Map to PDF page 129; verify actual PDF page before implementation. |
-| 125 | Clario Mind · Crisis pathway | TBD | Not started | Map to PDF page 130; verify actual PDF page before implementation. |
+| 125 | Clario Mind · Crisis pathway | `#mind` / Mind Studio urgent-help panel | In progress | Bangladesh emergency 999 and Child Helpline 1098 links with government source links; not a monitored crisis service. Browser/accessibility review remains. | Map to PDF page 130; verify actual PDF page before implementation. |
 | 126 | Clario Mind · Volunteer application | TBD | Not started | Map to PDF page 131; verify actual PDF page before implementation. |
 | 127 | Clario Mind · Admin: volunteer review | TBD | Not started | Map to PDF page 132; verify actual PDF page before implementation. |
 | 128 | Clario Mind · Volunteer workspace | TBD | Not started | Map to PDF page 133; verify actual PDF page before implementation. |
 | 129 | Clario Mind · Talk to a volunteer professional | TBD | Not started | Map to PDF page 134; verify actual PDF page before implementation. |
-| 130 | Clario Mind · Exercises and check-ins | TBD | Not started | Map to PDF page 135; verify actual PDF page before implementation. |
-| 131 | Clario Mind · Mood and journal | TBD | Not started | Map to PDF page 136; verify actual PDF page before implementation. |
+| 130 | Clario Mind · Exercises and check-ins | `#mind` / Mind Studio | In progress | Mood and support check-in, English/Bangla/Hindi interface, temporary page-only mode, saved history and per-session deletion exist; test on browser/staging. | Map to PDF page 135; verify actual PDF page before implementation. |
+| 131 | Clario Mind · Mood and journal | `#mind` / Mind Studio | In progress | Mood check-in exists; full journal workflows and visual comparison remain. | Map to PDF page 136; verify actual PDF page before implementation. |
 | 132 | Clario Mind · Safety plan, help and professionals | TBD | Not started | Map to PDF page 137; verify actual PDF page before implementation. |
-| 133 | Clario Mind · Privacy and data | TBD | Not started | Map to PDF page 138; verify actual PDF page before implementation. |
+| 133 | Clario Mind · Privacy and data | `#mind` / Mind Studio + migration 012 | In progress | Temporary data is page-only; saved sessions are owner-scoped with RLS and minor restrictions. Formal retention review and staging validation remain. | Map to PDF page 138; verify actual PDF page before implementation. |
 | 134 | Clario Mind · Admin safety console | TBD | Not started | Map to PDF page 139; verify actual PDF page before implementation. |
 | 135 | Public · Clario Mind | TBD | Not started | Map to PDF page 140; verify actual PDF page before implementation. |
 
