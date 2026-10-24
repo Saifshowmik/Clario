@@ -145,9 +145,7 @@ create policy social_reactions_delete_own on public.social_reactions for delete 
 create policy social_stories_read_active_audience on public.social_stories for select to authenticated
 using (
   expires_at > now()
-  and not exists (select 1 from public.social_blocks b where
-    (b.blocker_id=auth.uid() and b.blocked_id=author_id) or
-    (b.blocker_id=author_id and b.blocked_id=auth.uid()))
+  and not public.clario_social_is_blocked(auth.uid(),author_id)
   and (
     author_id=auth.uid()
     or (audience='public' and exists(select 1 from public.profiles p where p.id=author_id and p.profile_visibility='public'))
