@@ -75,6 +75,15 @@ drop trigger if exists clario_guard_follow_identity on public.social_follows;
 create trigger clario_guard_follow_identity before update on public.social_follows
 for each row execute function public.clario_guard_follow_identity();
 
+create or replace function public.clario_social_is_blocked(p_user_a uuid, p_user_b uuid)
+returns boolean language sql stable security definer set search_path=public,pg_temp as $
+  select exists(select 1 from public.social_blocks b
+    where (b.blocker_id=p_user_a and b.blocked_id=p_user_b)
+       or (b.blocker_id=p_user_b and b.blocked_id=p_user_a));
+$;
+revoke all on function public.clario_social_is_blocked(uuid,uuid) from public;
+grant execute on function public.clario_social_is_blocked(uuid,uuid) to authenticated;
+
 create index if not exists social_posts_author_created_idx on public.social_posts(author_id,created_at desc);
 create index if not exists social_posts_feed_idx on public.social_posts(status,audience,created_at desc);
 create index if not exists social_comments_post_created_idx on public.social_comments(post_id,created_at);
@@ -108,9 +117,7 @@ using (requester_id=auth.uid() or target_id=auth.uid());
 create policy social_posts_read_audience on public.social_posts for select to authenticated
 using (
   status='published'
-  and not exists (select 1 from public.social_blocks b where
-    (b.blocker_id=auth.uid() and b.blocked_id=author_id) or
-    (b.blocker_id=author_id and b.blocked_id=auth.uid()))
+  and not public.clario_social_is_blocked(auth.uid(),author_id)
   and (
     author_id=auth.uid()
     or (audience='public' and exists(select 1 from public.profiles p where p.id=author_id and p.profile_visibility='public'))
