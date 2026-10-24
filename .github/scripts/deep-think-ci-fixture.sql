@@ -1,3 +1,4 @@
+create extension if not exists pgcrypto;
 -- Test-only Supabase auth/profile fixture for CI. Never used by production.
 create role anon nologin;
 create role authenticated nologin;
