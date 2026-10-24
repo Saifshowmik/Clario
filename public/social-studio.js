@@ -218,6 +218,23 @@
       container.appendChild(img);
     });
   }
+  function loadStories() {
+    var ctx=clientAndUser(), list=document.getElementById("social-story-list");
+    if(!list)return;
+    list.replaceChildren();
+    if(!ctx.client||!ctx.user)return;
+    ctx.client.from("social_stories").select("id,author_id,text_content,audience,media_path,created_at,expires_at").gt("expires_at",new Date().toISOString()).order("created_at",{ascending:false}).limit(30).then(function(res){
+      if(res.error){status("social-story-status","Stories are unavailable until the social migration is applied.",false);return;}
+      (res.data||[]).forEach(function(story){
+        var card=el("article",{className:"panel"});
+        card.appendChild(el("p",{className:"sub"},(story.author_id===ctx.user.id?"Your story":"Member story")+" · expires "+new Date(story.expires_at).toLocaleString()));
+        if(story.text_content)card.appendChild(el("p",{},story.text_content));
+        if(story.media_path)showSocialMedia(ctx.client,story.media_path,card,"Story image").catch(function(){});
+        if(story.author_id===ctx.user.id){var remove=el("button",{type:"button",className:"btn s"},"Delete story");remove.addEventListener("click",function(){ctx.client.from("social_stories").delete().eq("id",story.id).eq("author_id",ctx.user.id).then(function(done){if(done.error)status("social-story-status","Could not delete story.",false);else loadStories();});});card.appendChild(remove);}
+        list.appendChild(card);
+      });
+    });
+  }
   function loadFollowRequests() {
     var ctx = clientAndUser(), list = document.getElementById("social-requests-list");
     if (!list) return;
