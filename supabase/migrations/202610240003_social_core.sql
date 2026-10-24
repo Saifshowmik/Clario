@@ -118,10 +118,12 @@ revoke all on function public.request_social_follow(text) from public;
 grant execute on function public.request_social_follow(text) to authenticated;
 
 -- Profile reads only reveal fields according to the selected visibility.
+drop policy if exists profiles_read on public.profiles;
 drop policy if exists profiles_social_read on public.profiles;
 create policy profiles_social_read on public.profiles for select to authenticated
 using (
   id=auth.uid()
+  or public.is_owner()
   or profile_visibility='public'
   or (profile_visibility='followers' and exists (
     select 1 from public.social_follows f
