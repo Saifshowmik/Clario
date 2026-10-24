@@ -29,7 +29,7 @@
     var page = node("div", { id: pageId, className: "pg", hidden: "" });
     var section = node("section");
     section.appendChild(node("h2", {}, "Profile Studio"));
-    section.appendChild(node("p", { className: "sub" }, "Choose how your Clario profile appears. Public discovery and follower-only access are preferences for the social rollout; private is the safest default."));
+    section.appendChild(node("p", { className: "sub" }, "Choose how your Clario profile appears. Profile visibility is enforced by database policies. Private is the safest default; only share information you intend the selected audience to see."));
     var panel = node("div", { className: "panel" });
     panel.appendChild(node("p", { className: "sub" }, "Your name, username, bio, interests, and visibility can be edited here. Account role and subscription plan are intentionally not editable."));
     var username = field(panel, "Username", "profile-username", "text", "", "3–24 characters: letters, numbers, underscores");
@@ -96,7 +96,7 @@
       profile_visibility: visibility
     }).eq("id", u.id).then(function (res) {
       if (res.error) { say(res.error.code === "23505" ? "That username is already taken." : (res.error.message || "Could not save profile."), false); return; }
-      say("Profile saved. Public/follower visibility enforcement must be completed before social discovery launches.", true);
+      say("Profile saved. Database access policies enforce your selected visibility.", true);
     });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
