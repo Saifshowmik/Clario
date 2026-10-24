@@ -40,6 +40,18 @@ begin
  end if;
 end
 $test$;
+-- A different authenticated user cannot delete the owner's session.
+set local request.jwt.claim.sub = '10000000-0000-4000-8000-000000000003';
+set local role authenticated;
+delete from public.mind_sessions where note='test saved session';
+reset role;
+do $test$
+begin
+ if not exists(select 1 from public.mind_sessions where user_id='10000000-0000-4000-8000-000000000001' and note='test saved session') then
+   raise exception 'Other user deleted someone else\'s saved session';
+ end if;
+end
+$test$;
 -- User can delete their own saved session.
 set local request.jwt.claim.sub = '10000000-0000-4000-8000-000000000001';
 set local role authenticated;
