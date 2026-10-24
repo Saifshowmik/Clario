@@ -81,7 +81,7 @@ begin
     raise exception 'Follow request can only be accepted or rejected';
   end if;
   return new;
-end; $;
+end; $$;
 revoke all on function public.clario_guard_follow_identity() from public;
 grant execute on function public.clario_guard_follow_identity() to authenticated;
 drop trigger if exists clario_guard_follow_identity on public.social_follows;
@@ -113,7 +113,7 @@ begin
           updated_at=now()
     returning id into v_request;
   return v_request;
-end; $;
+end; $$;
 revoke all on function public.request_social_follow(text) from public;
 grant execute on function public.request_social_follow(text) to authenticated;
 
