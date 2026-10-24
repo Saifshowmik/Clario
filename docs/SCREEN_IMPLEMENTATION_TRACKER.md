@@ -159,3 +159,12 @@ Do not mark a screen implemented merely because a link or placeholder exists. A 
 ## Current baseline
 
 The existing website is a static HTML/CSS/JavaScript app under `public/`, deployed to GitHub Pages on pushes to `main`. The current schema has core tables for profiles, decisions, usage, payments, prices, and audit logs. It is not yet evidence that all designed screens or newly requested features are implemented.
+
+
+## Implementation progress update (2026-10-24)
+
+- **Deep Think UI integration — in progress, not release-ready:** added a human-only Deep Think entry point to the existing decision studio and a dedicated board module at `public/deep-think.js`.
+- **Deep Think database migration — drafted, not applied:** `supabase/migrations/202610240001_deep_think.sql` defines case submission and admin/owner review functions. Column-level read permissions exclude internal reviewer notes.
+- **Not yet verified:** browser behavior, SQL execution on staging, authorization tests, and end-to-end user/admin flows.
+- **Not deployed:** production branch `main` and the live GitHub Pages website have not been changed by this work.
+- Other new feature groups (social profiles/stories, travel, referral/loyalty, streak rewards, and Clario Mind) remain requirements/planning until implemented and tested.
