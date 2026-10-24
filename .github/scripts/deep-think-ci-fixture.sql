@@ -42,10 +42,11 @@ create table storage.objects (
 alter table storage.objects enable row level security;
 grant usage on schema storage to authenticated;
 grant select, insert, update, delete on storage.objects to authenticated;
-create or replace function storage.foldername(name text)
+create or replace function storage.foldername(object_name text)
 returns text[] language sql immutable as $$
-  select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1)-1];
-grant execute on function storage.foldername(text) to authenticated;
-, ''), '/');
+  select case
+    when object_name is null or position('/' in object_name) = 0 then array[]::text[]
+    else string_to_array(regexp_replace(object_name, '/[^/]+$', ''), '/')
+  end;
 $$;
 grant execute on function storage.foldername(text) to authenticated;
