@@ -30,6 +30,25 @@
     var composerStatus = el("p", { id: "social-compose-status", role: "status", className: "sub" }, "");
     composer.appendChild(post); composer.appendChild(composerStatus);
     section.appendChild(composer);
+    var storyPanel = el("div", { className: "panel" });
+    storyPanel.appendChild(el("h3", {}, "24-hour story"));
+    var storyText = el("input", { id: "social-story-text", type: "text", maxlength: "1000", placeholder: "A short update for the next 24 hours…", style: "width:100%;min-height:48px;background:var(--nv);color:#fff;border:1px solid var(--cb);border-radius:12px;padding:8px 12px;font:inherit" });
+    var storyAudience = el("select", { id: "social-story-audience", style: "width:100%;min-height:48px;background:var(--nv);color:#fff;border:1px solid var(--cb);border-radius:12px;padding:8px 12px;font:inherit;margin:10px 0" });
+    [["followers","Followers"],["private","Only me"],["public","Public (requires a public profile)"]].forEach(function (v) { storyAudience.appendChild(el("option", { value: v[0] }, v[1])); });
+    var storyPublish = el("button", { type: "button", className: "btn s" }, "Share story");
+    var storyStatus = el("p", { id: "social-story-status", role: "status", className: "sub" }, "");
+    var storyList = el("div", { id: "social-story-list" });
+    storyPanel.appendChild(storyText); storyPanel.appendChild(storyAudience); storyPanel.appendChild(storyPublish); storyPanel.appendChild(storyStatus); storyPanel.appendChild(storyList);
+    storyPublish.addEventListener("click", publishStory);
+    section.appendChild(storyPanel);
+    var followPanel = el("div", { className: "panel" });
+    followPanel.appendChild(el("h3", {}, "Find a member"));
+    var username = el("input", { id: "social-follow-username", type: "text", maxlength: "24", placeholder: "Enter an exact username", style: "width:100%;min-height:48px;background:var(--nv);color:#fff;border:1px solid var(--cb);border-radius:12px;padding:8px 12px;font:inherit" });
+    var followButton = el("button", { type: "button", className: "btn s" }, "Request to follow");
+    var followStatus = el("p", { id: "social-follow-status", role: "status", className: "sub" }, "");
+    followButton.addEventListener("click", function () { requestFollow(username.value); });
+    followPanel.appendChild(username); followPanel.appendChild(followButton); followPanel.appendChild(followStatus);
+    section.appendChild(followPanel);
     var feed = el("div", { className: "panel" });
     feed.appendChild(el("h3", {}, "Your feed"));
     var feedStatus = el("p", { id: "social-feed-status", role: "status", className: "sub" }, "");
@@ -46,6 +65,7 @@
     refresh.addEventListener("click", loadFeed);
     post.addEventListener("click", publish);
     loadFeed();
+    loadStories();
   }
   function status(id, text, good) {
     var n = document.getElementById(id);
@@ -66,6 +86,57 @@
         document.getElementById("social-caption").value = "";
         status("social-compose-status", "Post published.", true);
         loadFeed();
+      });
+  }
+  function publishStory() {
+    var ctx = clientAndUser(), input = document.getElementById("social-story-text");
+    if (!ctx.client || !ctx.user) { status("social-story-status", "Sign in to share a story.", false); return; }
+    var text = input.value.trim();
+    if (!text || text.length > 1000) { status("social-story-status", "Enter a story of 1–1,000 characters.", false); return; }
+    ctx.client.from("social_stories").insert({ author_id: ctx.user.id, text_content: text, audience: document.getElementById("social-story-audience").value })
+      .then(function (res) {
+        if (res.error) { status("social-story-status", "Could not share story. Apply the social migration in staging first.", false); return; }
+        input.value = ""; status("social-story-status", "Story shared; it expires after 24 hours.", true); loadStories();
+      });
+  }
+  function loadStories() {
+    var ctx = clientAndUser(), list = document.getElementById("social-story-list");
+    if (!list) return;
+    list.replaceChildren();
+    if (!ctx.client || !ctx.user) return;
+    ctx.client.from("social_stories").select("id,author_id,text_content,audience,created_at,expires_at")
+      .gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(30)
+      .then(function (res) {
+        if (res.error) { status("social-story-status", "Stories are unavailable until the social migration is applied.", false); return; }
+        (res.data || []).forEach(function (story) {
+          var card = el("article", { className: "panel" });
+          card.appendChild(el("p", { className: "sub" }, (story.author_id === ctx.user.id ? "Your story" : "Member story") + " · expires " + new Date(story.expires_at).toLocaleString()));
+          card.appendChild(el("p", {}, story.text_content));
+          if (story.author_id === ctx.user.id) {
+            var remove = el("button", { type: "button", className: "btn s" }, "Delete story");
+            remove.addEventListener("click", function () {
+              ctx.client.from("social_stories").delete().eq("id", story.id).eq("author_id", ctx.user.id)
+                .then(function (done) { if (done.error) status("social-story-status", "Could not delete story.", false); else loadStories(); });
+            });
+            card.appendChild(remove);
+          }
+          list.appendChild(card);
+        });
+      });
+  }
+  function requestFollow(rawUsername) {
+    var ctx = clientAndUser(), name = (rawUsername || "").trim().replace(/^@/, "").toLowerCase();
+    if (!ctx.client || !ctx.user) { status("social-follow-status", "Sign in to request a follow.", false); return; }
+    if (!/^[a-z0-9_]{3,24}$/.test(name)) { status("social-follow-status", "Enter a valid username (3–24 letters, numbers, or underscores).", false); return; }
+    ctx.client.from("profiles").select("id,username,profile_visibility").eq("username", name).maybeSingle()
+      .then(function (res) {
+        if (res.error || !res.data) { status("social-follow-status", "No discoverable profile found for that username.", false); return; }
+        if (res.data.id === ctx.user.id) { status("social-follow-status", "You cannot follow yourself.", false); return; }
+        ctx.client.from("social_follows").insert({ requester_id: ctx.user.id, target_id: res.data.id, status: "pending" })
+          .then(function (done) {
+            if (done.error) { status("social-follow-status", "Follow request could not be sent. It may already exist or the target has blocked requests.", false); return; }
+            status("social-follow-status", "Follow request sent. The other member must accept it.", true);
+          });
       });
   }
   function loadFeed() {
