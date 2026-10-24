@@ -26,6 +26,7 @@ $test$;
 -- Saved history should contain exactly the user's saved session.
 select (count(*) = 1) as saved_ok from public.clario_mind_list_sessions() \gset
 \if :saved_ok
+\else
   \echo 'Expected exactly one saved session'
   \quit 1
 \endif
@@ -69,6 +70,7 @@ set local request.jwt.claim.sub = '10000000-0000-4000-8000-000000000003';
 set local role authenticated;
 select (count(*) = 0) as other_ok from public.clario_mind_list_sessions() \gset
 \if :other_ok
+\else
   \echo 'Other user can see saved history'
   \quit 1
 \endif
