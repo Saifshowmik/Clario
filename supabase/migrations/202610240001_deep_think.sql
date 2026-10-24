@@ -33,7 +33,7 @@ revoke all on public.deep_think_case_events from anon, authenticated;
 grant select (id,case_id,actor_id,event_type,status,message,created_at) on public.deep_think_case_events to authenticated;
 drop policy if exists deep_think_events_own_or_reviewer on public.deep_think_case_events;
 create policy deep_think_events_own_or_reviewer on public.deep_think_case_events for select to authenticated
-using (exists(select 1 from public.deep_think_cases c where c.id=case_id and (c.user_id=auth.uid() or public.clario_can_review_deep_think())));
+using (exists(select 1 from public.deep_think_cases c where c.id=case_id and (c.user_id=auth.uid() or exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','owner')))));
 create index if not exists deep_think_cases_user_created_idx on public.deep_think_cases(user_id, created_at desc);
 create index if not exists deep_think_cases_status_created_idx on public.deep_think_cases(status, created_at);
 alter table public.deep_think_cases enable row level security;
@@ -69,6 +69,8 @@ begin
   insert into public.deep_think_cases(user_id,title,background,goals,options_text,constraints_text,risks,additional_text)
   values(auth.uid(),trim(p_title),coalesce(p_background,''),coalesce(p_goals,''),coalesce(p_options,''),coalesce(p_constraints,''),coalesce(p_risks,''),coalesce(p_additional,''))
   returning id into new_id;
+  insert into public.deep_think_case_events(case_id,actor_id,event_type,status,message)
+  values(new_id,auth.uid(),'submitted','submitted','Case submitted for human-only review');
   return new_id;
 end $$;
 revoke all on function public.submit_deep_think_case(text,text,text,text,text,text,text) from public, anon;
@@ -91,6 +93,9 @@ begin
       reviewed_by=auth.uid(), reviewed_at=now(), updated_at=now()
   where id=p_case_id;
   if not found then raise exception 'Case not found'; end if;
-end $$;
+  insert into public.deep_think_case_events(case_id,actor_id,event_type,status,message)
+  values(p_case_id,auth.uid(),case when p_status='delivered' then 'decision_delivered' else 'status_changed' end,p_status,
+    case when p_status='delivered' then 'Human decision delivered' else 'Review status updated' end);
+end $;
 revoke all on function public.review_deep_think_case(uuid,text,text,text) from public, anon;
 grant execute on function public.review_deep_think_case(uuid,text,text,text) to authenticated;
