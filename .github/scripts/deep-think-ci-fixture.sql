@@ -44,6 +44,9 @@ grant usage on schema storage to authenticated;
 grant select, insert, update, delete on storage.objects to authenticated;
 create or replace function storage.foldername(name text)
 returns text[] language sql immutable as $$
-  select string_to_array(name, '/')[1:greatest(array_length(string_to_array(name, '/'),1)-1,0)];
+  select string_to_array(regexp_replace(name, '/[^/]*
+$$;
+grant execute on function storage.foldername(text) to authenticated;
+, ''), '/');
 $$;
 grant execute on function storage.foldername(text) to authenticated;
