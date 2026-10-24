@@ -55,7 +55,7 @@ create policy profiles_social_read on public.profiles for select to authenticate
 using (
   id=auth.uid()
   or profile_visibility='public'
-  or exists(select 1 from public.social_follows f where f.requester_id=auth.uid() and f.target_id=id and f.status='accepted')
+  or (profile_visibility='followers' and exists(select 1 from public.social_follows f where f.requester_id=auth.uid() and f.target_id=public.profiles.id and f.status='accepted'))
 );
 
 create or replace function public.clario_guard_follow_identity()
