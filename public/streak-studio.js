@@ -11,14 +11,17 @@ function init(){
  var stats=el("div",{class:"grid"});
  [["Today’s completed decisions","streak-today-count"],["Current consecutive days","streak-current"],["Best recorded streak","streak-best"],["Next milestone","streak-next"]].forEach(function(x){var box=el("div",{class:"card"});box.appendChild(el("p",{class:"sub"},x[0]));box.appendChild(el("strong",{id:x[1]},"—"));stats.appendChild(box);});
  panel.appendChild(stats);
- panel.appendChild(el("p",{class:"sub"},"60 consecutive qualifying days: 7 days of Pro. Every 365 consecutive qualifying days: 1 day of Extra Premium. Rewards appear here as earned milestones; automatic plan entitlement delivery is not yet enabled."));
+ panel.appendChild(el("p",{class:"sub"},"60 consecutive qualifying days: 7 days of Pro. Every 365 consecutive qualifying days: 1 day of Extra Premium. Earned milestones create expiring plan entitlements automatically when this dashboard refreshes. Your existing paid plan is never downgraded by a temporary reward."));
  var refresh=el("button",{type:"button",class:"btn"},"Refresh streak");refresh.addEventListener("click",load);panel.appendChild(refresh);wrap.appendChild(panel);
  var history=el("div",{class:"panel"});history.appendChild(el("h3",{},"Earned milestones"));var list=el("div",{id:"streak-milestones"});history.appendChild(list);wrap.appendChild(history);wrap.appendChild(status);main.appendChild(page);
  function load(){
   var db=window.sb||null,user=window.U||null;
   if(!db||!user){status.textContent="Sign in to view your streak.";return;}
   refresh.disabled=true;status.textContent="Checking qualifying decisions…";
-  db.rpc("clario_refresh_streak").then(function(res){
+  db.rpc("clario_deliver_streak_rewards").then(function(grants){
+   if(grants.error)throw grants.error;
+   return db.rpc("clario_refresh_streak");
+  }).then(function(res){
    if(res.error)throw res.error;var d=res.data||{};
    document.getElementById("streak-today-count").textContent=String(d.today_decisions||0);
    document.getElementById("streak-current").textContent=String(d.current_streak||0);
