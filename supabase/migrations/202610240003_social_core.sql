@@ -59,7 +59,7 @@ using (
 );
 
 create or replace function public.clario_guard_follow_identity()
-returns trigger language plpgsql security definer set search_path=public,pg_temp as $
+returns trigger language plpgsql security definer set search_path=public,pg_temp as $$
 begin
   if new.requester_id is distinct from old.requester_id or new.target_id is distinct from old.target_id then
     raise exception 'Follow request participants cannot be changed';
@@ -68,7 +68,7 @@ begin
     raise exception 'Only the requested account can accept or reject a follow request';
   end if;
   return new;
-end $;
+end $$;
 revoke all on function public.clario_guard_follow_identity() from public;
 grant execute on function public.clario_guard_follow_identity() to authenticated;
 drop trigger if exists clario_guard_follow_identity on public.social_follows;
@@ -76,7 +76,7 @@ create trigger clario_guard_follow_identity before update on public.social_follo
 for each row execute function public.clario_guard_follow_identity();
 
 create or replace function public.clario_social_is_blocked(p_user_a uuid, p_user_b uuid)
-returns boolean language sql stable security definer set search_path=public,pg_temp as $
+returns boolean language sql stable security definer set search_path=public,pg_temp as $$
   select exists(select 1 from public.social_blocks b
     where (b.blocker_id=p_user_a and b.blocked_id=p_user_b)
        or (b.blocker_id=p_user_b and b.blocked_id=p_user_a));
