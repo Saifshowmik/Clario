@@ -91,6 +91,31 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240008_travel_planner.sql
+      - name: Verify social media and travel schema plus RLS
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 <<'SQL'
+          do $check$
+          begin
+            if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='social_posts' and column_name='media_path') then
+              raise exception 'social_posts.media_path missing';
+            end if;
+            if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='social_stories' and column_name='media_path') then
+              raise exception 'social_stories.media_path missing';
+            end if;
+            if not exists (select 1 from pg_policies where schemaname='storage' and tablename='objects' and policyname='Social media authorized read') then
+              raise exception 'Social media authorized read policy missing';
+            end if;
+            if not exists (select 1 from pg_tables where schemaname='public' and tablename='travel_trips') then
+              raise exception 'travel_trips table missing';
+            end if;
+            if not exists (select 1 from pg_class where oid='public.travel_trips'::regclass and relrowsecurity) then
+              raise exception 'travel_trips RLS is not enabled';
+            end if;
+          end
+          $check$;
+          SQL
       - name: Apply Clario Mind migration to disposable database
         env:
           PGPASSWORD: postgres
