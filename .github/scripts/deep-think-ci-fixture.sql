@@ -9,9 +9,46 @@ create table public.profiles (
   plan text not null default 'free'
 );
 create or replace function auth.uid()
-returns uuid language sql stable as $$
+returns uuid language sql stable as $
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
-$$;
+$;
+
+-- Minimal core Clario schema needed to integration-test paid rewards and streak entitlements.
+create table public.decisions (
+ id uuid primary key default gen_random_uuid(),
+ user_id uuid not null references public.profiles(id) on delete cascade,
+ best text not null,
+ score integer not null,
+ created_at timestamptz not null default now()
+);
+create table public.usage (
+ user_id uuid references public.profiles(id) on delete cascade,
+ day date not null,
+ n integer not null default 0,
+ primary key(user_id,day)
+);
+create table public.payments (
+ id uuid primary key default gen_random_uuid(),
+ user_id uuid not null references public.profiles(id) on delete cascade,
+ plan text not null check(plan in ('pro','premium','extra_premium')),
+ period text not null check(period in ('weekly','monthly','yearly')),
+ method text not null check(method in ('bkash','nagad')),
+ trx_id text not null unique,
+ status text not null default 'pending' check(status in ('pending','approved','rejected')),
+ reason text,
+ created_at timestamptz not null default now()
+);
+create table public.audit_log (
+ id bigint generated always as identity primary key,
+ actor uuid,
+ action text not null,
+ reason text not null,
+ created_at timestamptz not null default now()
+);
+create or replace function public.is_owner() returns boolean
+language sql stable security definer set search_path=public as $
+ select exists(select 1 from public.profiles where id=auth.uid() and role='owner')
+$;
 grant usage on schema auth to anon, authenticated;
 grant execute on function auth.uid() to anon, authenticated;
 insert into auth.users(id) values
