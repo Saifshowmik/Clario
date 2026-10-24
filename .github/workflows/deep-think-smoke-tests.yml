@@ -1,0 +1,33 @@
+name: Clario feature smoke tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feature/full-platform-recovery]
+
+jobs:
+  frontend-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: node --check public/deep-think.js
+      - name: Verify Deep Think is wired into the app
+        run: |
+          grep -q 'id="deep-think-start"' public/index.html
+          grep -q '<script src="deep-think.js"></script>' public/index.html
+          grep -q 'submit_deep_think_case' public/deep-think.js
+          grep -q 'review_deep_think_case' public/deep-think.js
+      - name: Verify database authorization safeguards
+        run: |
+          grep -q 'enable row level security' supabase/migrations/202610240001_deep_think.sql
+          grep -q "p.role in ('admin','owner')" supabase/migrations/202610240001_deep_think.sql
+          grep -q 'Admin/owner access required' supabase/migrations/202610240001_deep_think.sql
+          grep -q 'internal_note' supabase/migrations/202610240001_deep_think.sql
+          grep -q 'deep_think_case_events' supabase/migrations/202610240001_deep_think.sql
