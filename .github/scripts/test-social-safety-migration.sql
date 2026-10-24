@@ -60,3 +60,35 @@ begin
     raise exception 'Report insertion did not persist';
   end if;
 end $$;
+
+-- Owner can resolve a report; normal users cannot.
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000002',false);
+set role authenticated;
+select public.review_social_report(
+  (select id from public.social_reports where reason='spam' limit 1),
+  'resolved'
+);
+reset role;
+do $$
+begin
+  if not exists(select 1 from public.social_reports where reason='spam' and status='resolved'
+      and reviewed_by='10000000-0000-4000-8000-000000000002') then
+    raise exception 'Owner report review did not persist';
+  end if;
+end $$;
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000003',false);
+set role authenticated;
+do $$
+begin
+  begin
+    perform public.review_social_report(
+      (select id from public.social_reports where reason='spam' limit 1),
+      'dismissed'
+    );
+    raise exception 'Normal user unexpectedly reviewed a report';
+  exception when others then
+    if sqlerrm='Normal user unexpectedly reviewed a report' then raise; end if;
+    if position('Owner access required' in sqlerrm)=0 then raise; end if;
+  end;
+end $$;
+reset role;
