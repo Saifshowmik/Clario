@@ -33,3 +33,25 @@ test('mobile viewport keeps navigation controls visible and usable', async ({ pa
   await expect(page.locator('#p-decide')).toBeVisible();
   await expect(page.locator('#budget')).toBeVisible();
 });
+
+test('all implemented feature studios mount and can be opened from navigation', async ({ page }) => {
+  const routeIds = ['profile', 'social', 'travel', 'rewards', 'streaks', 'mind', 'deep-think'];
+  for (const id of routeIds) {
+    const pageSection = page.locator('#p-' + id);
+    await expect(pageSection, id + ' studio should mount').toHaveCount(1);
+    await page.locator('[data-go="' + (id === 'profile' ? 'acct' : id) + '"]').first().click();
+    await expect(pageSection, id + ' studio should become visible').toBeVisible();
+  }
+});
+
+test('plans page exposes the approved prices', async ({ page }) => {
+  await page.locator('[data-go="plans"]').first().click();
+  const plans = page.locator('#p-plans');
+  await expect(plans).toContainText('29');
+  await expect(plans).toContainText('99');
+  await expect(plans).toContainText('1,099');
+  await expect(plans).toContainText('199');
+  await expect(plans).toContainText('1,999');
+  await expect(plans).toContainText('999');
+  await expect(plans).toContainText('9,999');
+});
