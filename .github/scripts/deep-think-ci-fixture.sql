@@ -5,7 +5,8 @@ create schema auth;
 create table auth.users (id uuid primary key);
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  role text not null default 'user' check (role in ('user','owner'))
+  role text not null default 'user' check (role in ('user','owner')),
+  plan text not null default 'free'
 );
 create or replace function auth.uid()
 returns uuid language sql stable as $$
@@ -21,3 +22,5 @@ insert into public.profiles(id, role) values
  ('10000000-0000-4000-8000-000000000001','user'),
  ('10000000-0000-4000-8000-000000000002','owner'),
  ('10000000-0000-4000-8000-000000000003','user');
+
+grant select, update on public.profiles to authenticated;
