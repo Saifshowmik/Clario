@@ -56,10 +56,30 @@ Prices are product requirements. Payment settlement, renewals, refunds, and plan
 - Prevent self-referrals, duplicate accounts, repeated claims, referral loops, and client-side reward tampering.
 - Admin configuration and audit history are required.
 
-## Social profile
-- Profile picture, cover image, biography, interests, photo/video gallery.
-- Privacy settings; explicit audience visibility; edit/delete; report/block; consent and moderation.
+## Social profiles and community
+
+### Profile setup and customization
+- Users create and customize profiles inspired by familiar social platforms, while preserving Clario's decision-support purpose.
+- Profile fields may include profile photo, cover photo, display name, unique username, biography, interests, and optional location / personal or professional details.
+- Support profile presentation customization and photo/video galleries; allow users to edit or delete their own profile details and media.
+- Profile media is separate from decision-related uploads and does not consume decision-upload quotas unless the owner explicitly changes this rule.
+
+### Privacy and audience controls
+- **Required onboarding choice: users choose their profile privacy during setup**; do not force public or private as a universal default.
+- Available profile visibility options: public, private, and followers-only, with clear explanations of what each means.
+- Every post and every story has its own audience selector, so its visibility can differ from the overall profile setting.
+- Enforce the most restrictive applicable privacy rule on the server; a per-post audience choice must never accidentally expose content beyond permissions granted by the profile owner.
+- Provide account privacy settings, follower/following management, follow requests where applicable, and controls to remove followers.
+- Provide block, mute, report, content moderation, abuse handling, and account/content deletion workflows.
 - Private media must use authorized access / signed URLs and storage policies. Validate file type, size, content, and malware risk.
+
+### Posts and stories
+- Support photo and video posts with captions, hashtags, optional tags, reactions/likes, comments, shares, and saves, subject to privacy settings and moderation.
+- Users can edit or delete their own posts and control the audience for each post.
+- Support temporary photo/video stories with audience controls, viewer list and reactions.
+- Default story lifetime: 24 hours, with expiration enforced server-side. Expired stories may be retained only where necessary for security, moderation, or legal obligations under a documented retention policy.
+- Links, music, stickers, and other enhanced story tools are subject to safety, licensing, and platform capability checks; do not promise unavailable integrations.
+- Notifications and messaging are separate scope items and must respect blocks, privacy settings, and user safety controls before being enabled.
 
 ## Tour & Travel (Pro and above)
 - Solo, duo, and group trip modes.
