@@ -21,6 +21,9 @@ jobs:
           node --check public/deep-think.js
           node --check public/profile-studio.js
           node --check public/social-studio.js
+          grep -q 'profile-display-name' public/profile-studio.js
+          grep -q 'display_name' public/profile-studio.js
+          grep -q 'char_length(coalesce(new.display_name' supabase/migrations/202610240005_profile_display_name.sql
       - name: Verify Deep Think is wired into the app
         run: |
           grep -q 'id="deep-think-start"' public/index.html
