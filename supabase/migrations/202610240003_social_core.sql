@@ -103,11 +103,7 @@ create policy social_blocks_delete_own on public.social_blocks for delete to aut
 create policy social_follows_read_participants on public.social_follows for select to authenticated
 using (requester_id=auth.uid() or target_id=auth.uid());
 create policy social_follows_request_own on public.social_follows for insert to authenticated
-with check (requester_id=auth.uid() and not exists (
-  select 1 from public.social_blocks b where
-    (b.blocker_id=auth.uid() and b.blocked_id=target_id) or
-    (b.blocker_id=target_id and b.blocked_id=auth.uid())
-));
+with check (requester_id=auth.uid() and not public.clario_social_is_blocked(auth.uid(),target_id));
 create policy social_follows_update_target on public.social_follows for update to authenticated
 using (target_id=auth.uid()) with check (target_id=auth.uid() and status in ('accepted','rejected'));
 create policy social_follows_delete_participant on public.social_follows for delete to authenticated
