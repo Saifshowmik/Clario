@@ -83,6 +83,11 @@ footer{background:var(--dd);text-align:center;color:var(--t2);font-size:14px;pad
     <p data-i="hsub"></p>
     <button class="btn" type="button" data-go="decide" data-i="cta"></button>
     <button class="btn s" type="button" data-go="plans" data-i="n_plans"></button>
+    <button class="btn s" type="button" data-go="social">Open Clario Social</button>
+    <button class="btn s" type="button" data-go="travel">Plan a trip</button>
+    <button class="btn s" type="button" data-go="rewards">Referrals & Loyalty</button>
+    <button class="btn s" type="button" data-go="streaks">Streak Rewards</button>
+    <button class="btn s" type="button" data-go="mind">Clario Mind</button>
   </div>
   <section>
     <h2 data-i="how_t"></h2><p class="sub" data-i="how_s"></p>
@@ -116,6 +121,7 @@ footer{background:var(--dd);text-align:center;color:var(--t2);font-size:14px;pad
       </div>
       <div id="rows"></div>
       <button class="btn" id="go" type="button" data-i="go" style="margin-inline:0"></button>
+      <button class="btn s" id="deep-think-start" type="button" style="margin-inline:0">Request human-only Deep Think</button>
       <div class="err" id="err" role="alert"></div>
       <div id="out" aria-live="polite"></div>
     </div>
@@ -123,6 +129,11 @@ footer{background:var(--dd);text-align:center;color:var(--t2);font-size:14px;pad
 </div>
 
 <div class="pg" id="p-dash" hidden>
+  <section class="panel">
+    <h3>Clario Social</h3>
+    <p class="sub">Share updates, manage follow requests, and control your social safety settings.</p>
+    <button class="btn s" type="button" data-go="social">Open Social Studio</button>
+  </section>
   <section>
     <h2 data-i="dash_t"></h2><p class="sub" id="cnt"></p>
     <div class="panel">
@@ -339,5 +350,12 @@ apply();
 go((location.hash||"").slice(1)||"home");
 sync();
 </script>
+<script src="deep-think.js"></script>
+<script src="profile-studio.js"></script>
+<script src="social-studio.js"></script>
+<script src="travel-studio.js"></script>
+<script src="rewards-studio.js"></script>
+<script src="streak-studio.js"></script>
+<script src="mind-studio.js"></script>
 </body>
 </html>

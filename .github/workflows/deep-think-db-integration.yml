@@ -1,0 +1,147 @@
+name: Clario Deep Think database integration
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feature/full-platform-recovery]
+
+jobs:
+  postgres-migration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: clario_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d clario_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Create isolated Supabase auth/profile fixture
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/deep-think-ci-fixture.sql
+      - name: Apply Deep Think migration to disposable database
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240001_deep_think.sql
+      - name: Verify submission and audit event
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-deep-think-migration.sql
+      - name: Apply social profile foundation migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240002_social_profile_foundation.sql
+      - name: Verify profile fields and privilege guard
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-social-profile-migration.sql
+      - name: Apply social core migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240003_social_core.sql
+      - name: Verify social core security policies
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-social-core-migration.sql
+
+      - name: Apply social safety migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240004_social_safety.sql
+      - name: Verify social safety policies and RPCs
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-social-safety-migration.sql
+
+      - name: Apply profile display-name migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240005_profile_display_name.sql
+      - name: Verify profile display-name validation
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-profile-display-name-migration.sql
+
+      - name: Apply private profile media migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240006_private_profile_media.sql
+      - name: Verify private profile media storage policies
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-profile-media-migration.sql
+
+      - name: Apply private social media migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240007_social_media.sql
+      - name: Apply travel planner migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240008_travel_planner.sql
+      - name: Verify social media and travel schema plus RLS
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 <<'SQL'
+          do $check$
+          begin
+            if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='social_posts' and column_name='media_path') then
+              raise exception 'social_posts.media_path missing';
+            end if;
+            if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='social_stories' and column_name='media_path') then
+              raise exception 'social_stories.media_path missing';
+            end if;
+            if not exists (select 1 from pg_policies where schemaname='storage' and tablename='objects' and policyname='Social media authorized read') then
+              raise exception 'Social media authorized read policy missing';
+            end if;
+            if not exists (select 1 from pg_tables where schemaname='public' and tablename='travel_trips') then
+              raise exception 'travel_trips table missing';
+            end if;
+            if not exists (select 1 from pg_class where oid='public.travel_trips'::regclass and relrowsecurity) then
+              raise exception 'travel_trips RLS is not enabled';
+            end if;
+          end
+          $check$;
+          SQL
+      - name: Verify travel draft user isolation
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-travel-planner-migration.sql
+      - name: Apply Clario Mind migration to disposable database
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240012_clario_mind.sql
+      - name: Verify Clario Mind privacy and age safeguards
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-clario-mind-migration.sql
+
+      - name: Apply referrals and loyalty migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240009_referrals_loyalty.sql
+      - name: Apply server-verified streak migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240010_streak_rewards.sql
+      - name: Apply temporary streak entitlement migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240011_streak_entitlements.sql
+      - name: Verify referral qualification, rewards, and streak thresholds
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-rewards-streaks-migration.sql
