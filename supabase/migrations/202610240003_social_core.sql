@@ -105,7 +105,7 @@ returns uuid
 language plpgsql
 security definer
 set search_path = public, pg_temp
-as $
+as $$
 declare
   v_target uuid;
   v_request uuid;
@@ -178,7 +178,7 @@ comment on table public.social_stories is 'Stories expire after 24 hours; client
     returning id into v_request;
   return v_request;
 end;
-$;
+$$;
 revoke all on function public.request_social_follow(text) from public;
 grant execute on function public.request_social_follow(text) to authenticated;
 
