@@ -36,6 +36,19 @@
     var username = field(panel, "Username", "profile-username", "text", "", "3–24 characters: letters, numbers, underscores");
     var bio = field(panel, "Bio", "profile-bio", "textarea", "", "Tell people a little about yourself (max 240 characters)");
     var interests = field(panel, "Interests (comma-separated, up to 12)", "profile-interests", "text", "", "technology, travel, learning");
+    var mediaWrap = node("div", { className: "panel", style: "margin:14px 0" });
+    mediaWrap.appendChild(node("h3", {}, "Profile photos"));
+    mediaWrap.appendChild(node("p", { className: "sub" }, "Private image storage. JPEG, PNG, or WebP; maximum 5 MB per image. Only you can access the original files."));
+    var avatarInput = node("input", { id: "profile-avatar-file", type: "file", accept: "image/jpeg,image/png,image/webp" });
+    var coverInput = node("input", { id: "profile-cover-file", type: "file", accept: "image/jpeg,image/png,image/webp" });
+    var avatarLabel = node("label", { for: "profile-avatar-file" }, "Profile photo");
+    var coverLabel = node("label", { for: "profile-cover-file" }, "Cover photo");
+    mediaWrap.appendChild(avatarLabel); mediaWrap.appendChild(avatarInput);
+    mediaWrap.appendChild(coverLabel); mediaWrap.appendChild(coverInput);
+    var avatarPreview = node("img", { id: "profile-avatar-preview", alt: "Profile photo preview", hidden: "", style: "max-width:120px;max-height:120px;object-fit:cover;border-radius:50%;display:block;margin:8px 0" });
+    var coverPreview = node("img", { id: "profile-cover-preview", alt: "Cover photo preview", hidden: "", style: "max-width:100%;max-height:180px;object-fit:cover;border-radius:12px;display:block;margin:8px 0" });
+    mediaWrap.appendChild(avatarPreview); mediaWrap.appendChild(coverPreview);
+    panel.appendChild(mediaWrap);
     var visibilityWrap = node("div", { style: "margin-bottom:16px" });
     visibilityWrap.appendChild(node("label", { for: "profile-visibility" }, "Profile visibility"));
     var visibility = node("select", { id: "profile-visibility", style: "width:100%;min-height:48px;background:var(--nv);color:#fff;border:1px solid var(--cb);border-radius:12px;padding:8px 12px;font:inherit" });
@@ -58,6 +71,8 @@
     open.addEventListener("click", function () { window.go("profile"); load(); });
     back.addEventListener("click", function () { window.go("dash"); });
     save.addEventListener("click", saveProfile);
+    avatarInput.addEventListener("change", function () { uploadProfileImage("avatar", avatarInput.files && avatarInput.files[0]); });
+    coverInput.addEventListener("change", function () { uploadProfileImage("cover", coverInput.files && coverInput.files[0]); });
     username.addEventListener("input", function () { username.value = username.value.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0,24); });
     load();
   }
@@ -68,7 +83,7 @@
   function load() {
     var client = window.sb, u = window.U;
     if (!client || !u) { say("Sign in to edit your profile.", false); return; }
-    client.from("profiles").select("display_name,username,bio,interests,profile_visibility").eq("id", u.id).maybeSingle()
+    client.from("profiles").select("display_name,username,bio,interests,profile_visibility,avatar_path,cover_path").eq("id", u.id).maybeSingle()
       .then(function (res) {
         if (res.error) { say("Could not load profile. Apply the social profile migration to staging first.", false); return; }
         var p = res.data || {};
@@ -77,8 +92,40 @@
         document.getElementById("profile-bio").value = p.bio || "";
         document.getElementById("profile-interests").value = Array.isArray(p.interests) ? p.interests.join(", ") : "";
         document.getElementById("profile-visibility").value = p.profile_visibility || "private";
+        showPrivateImage("profile-avatar-preview", p.avatar_path);
+        showPrivateImage("profile-cover-preview", p.cover_path);
         say("Profile loaded. Review visibility before saving.", true);
       });
+  }
+  function showPrivateImage(elementId, path) {
+    var client = window.sb, u = window.U, img = document.getElementById(elementId);
+    if (!img) return;
+    img.hidden = true; img.removeAttribute("src");
+    if (!client || !u || !path || !path.startsWith(u.id + "/")) return;
+    client.storage.from("profile-media").createSignedUrl(path, 300).then(function (res) {
+      if (res.error || !res.data || !res.data.signedUrl) return;
+      img.src = res.data.signedUrl; img.hidden = false;
+    });
+  }
+  function uploadProfileImage(kind, file) {
+    var client = window.sb, u = window.U;
+    if (!client || !u) { say("Sign in before uploading profile media.", false); return; }
+    if (!file) return;
+    if (!["image/jpeg","image/png","image/webp"].includes(file.type) || file.size > 5*1024*1024) {
+      say("Choose a JPEG, PNG, or WebP image no larger than 5 MB.", false); return;
+    }
+    var path = u.id + "/" + kind + "-" + Date.now() + "-" + file.name.replace(/[^a-zA-Z0-9._-]/g,"_").slice(-80);
+    say("Uploading private image…", true);
+    client.storage.from("profile-media").upload(path, file, { upsert: false, contentType: file.type })
+      .then(function (uploaded) {
+        if (uploaded.error) { say("Upload failed. Apply the private profile media migration in staging first.", false); return; }
+        var patch = {}; patch[kind === "avatar" ? "avatar_path" : "cover_path"] = uploaded.data.path;
+        return client.from("profiles").update(patch).eq("id", u.id).then(function (saved) {
+          if (saved.error) { say("Image uploaded but profile update failed. Please retry or remove the orphaned file from storage.", false); return; }
+          showPrivateImage(kind === "avatar" ? "profile-avatar-preview" : "profile-cover-preview", uploaded.data.path);
+          say(kind === "avatar" ? "Profile photo uploaded privately." : "Cover photo uploaded privately.", true);
+        });
+      }).catch(function () { say("Image upload failed. Please retry.", false); });
   }
   function saveProfile() {
     var client = window.sb, u = window.U;
