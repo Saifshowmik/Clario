@@ -128,3 +128,20 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-clario-mind-migration.sql
+
+      - name: Apply referrals and loyalty migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240009_referrals_loyalty.sql
+      - name: Apply server-verified streak migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240010_streak_rewards.sql
+      - name: Apply temporary streak entitlement migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610240011_streak_entitlements.sql
+      - name: Verify referral qualification, rewards, and streak thresholds
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d clario_test -v ON_ERROR_STOP=1 -f .github/scripts/test-rewards-streaks-migration.sql
