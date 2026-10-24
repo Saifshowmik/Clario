@@ -99,7 +99,7 @@ using (
 create or replace function public.review_social_report(p_report_id uuid, p_status text)
 returns void language plpgsql security definer set search_path=public,pg_temp as $$
 begin
-  if auth.uid() is null or not exists(select 1 from public.profiles where id=auth.uid() and role='owner') then
+  if auth.uid() is null or not exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='owner') then
     raise exception 'Owner access required';
   end if;
   if p_status not in ('reviewing','resolved','dismissed') then
