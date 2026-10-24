@@ -24,6 +24,14 @@ jobs:
           node --check public/travel-studio.js
           node --check public/rewards-studio.js
           node --check public/streak-studio.js
+          node --check public/mind-studio.js
+          grep -q 'clario_mind_save_session' public/mind-studio.js
+          grep -q 'clario_mind_list_sessions' public/mind-studio.js
+          grep -q 'data-go="mind"' public/index.html
+          grep -q '<script src="mind-studio.js"></script>' public/index.html
+          grep -q 'enable row level security' supabase/migrations/202610240012_clario_mind.sql
+          grep -q 'p_age_band<>' supabase/migrations/202610240012_clario_mind.sql
+          grep -q 'expires_at' supabase/migrations/202610240012_clario_mind.sql
           grep -q 'clario_deliver_streak_rewards' public/streak-studio.js
           grep -q 'plan_entitlement_grants' supabase/migrations/202610240011_streak_entitlements.sql
           grep -q 'clario_effective_plan' supabase/migrations/202610240011_streak_entitlements.sql
