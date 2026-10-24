@@ -16,12 +16,15 @@
     var page = el("div", { id: "p-social", className: "pg", hidden: "" });
     var section = el("section");
     section.appendChild(el("h2", {}, "Clario Social"));
-    section.appendChild(el("p", { className: "sub" }, "Share text updates with the audience you choose. Access is enforced by database row-level security. Profile photo and cover uploads are private; post and story media are not enabled yet."));
+    section.appendChild(el("p", { className: "sub" }, "Share text and image updates with the audience you choose. Media is stored privately and access is checked against post/story visibility."));
     var composer = el("div", { className: "panel" });
     composer.appendChild(el("h3", {}, "Create a post"));
     var label = el("label", { for: "social-caption" }, "What would you like to share?");
     var caption = el("textarea", { id: "social-caption", rows: "4", maxlength: "3000", placeholder: "Share an update, thought, or question…", style: "width:100%;background:var(--nv);color:#fff;border:1px solid var(--cb);border-radius:12px;padding:10px;font:inherit" });
     composer.appendChild(label); composer.appendChild(caption);
+    var postMediaLabel = el("label", { for: "social-post-media" }, "Attach an image (optional, JPEG/PNG/WebP up to 8 MB)");
+    var postMedia = el("input", { id: "social-post-media", type: "file", accept: "image/jpeg,image/png,image/webp", style: "display:block;width:100%;margin:10px 0" });
+    composer.appendChild(postMediaLabel); composer.appendChild(postMedia);
     var audienceLabel = el("label", { for: "social-audience" }, "Who can see this post?");
     var audience = el("select", { id: "social-audience", style: "width:100%;min-height:48px;background:var(--nv);color:#fff;border:1px solid var(--cb);border-radius:12px;padding:8px 12px;font:inherit;margin-bottom:12px" });
     [["followers","Followers"],["private","Only me"],["public","Public (requires a public profile)"]].forEach(function (v) { audience.appendChild(el("option", { value: v[0] }, v[1])); });
@@ -38,7 +41,9 @@
     var storyPublish = el("button", { type: "button", className: "btn s" }, "Share story");
     var storyStatus = el("p", { id: "social-story-status", role: "status", className: "sub" }, "");
     var storyList = el("div", { id: "social-story-list" });
-    storyPanel.appendChild(storyText); storyPanel.appendChild(storyAudience); storyPanel.appendChild(storyPublish); storyPanel.appendChild(storyStatus); storyPanel.appendChild(storyList);
+    var storyMediaLabel = el("label", { for: "social-story-media" }, "Attach an image (optional, JPEG/PNG/WebP up to 8 MB)");
+    var storyMedia = el("input", { id: "social-story-media", type: "file", accept: "image/jpeg,image/png,image/webp", style: "display:block;width:100%;margin:10px 0" });
+    storyPanel.appendChild(storyText); storyPanel.appendChild(storyAudience); storyPanel.appendChild(storyMediaLabel); storyPanel.appendChild(storyMedia); storyPanel.appendChild(storyPublish); storyPanel.appendChild(storyStatus); storyPanel.appendChild(storyList);
     storyPublish.addEventListener("click", publishStory);
     section.appendChild(storyPanel);
     var followPanel = el("div", { className: "panel" });
@@ -137,57 +142,81 @@
     if (n) { n.textContent = text; n.style.color = good ? "var(--teal)" : "var(--er)"; }
   }
   function clientAndUser() { return { client: window.sb || null, user: window.U || null }; }
+  var SOCIAL_MEDIA_BUCKET = "social-media";
+  var SOCIAL_MEDIA_MAX_BYTES = 8 * 1024 * 1024;
+  var SOCIAL_MEDIA_TYPES = ["image/jpeg", "image/png", "image/webp"];
+  function validateSocialImage(file) {
+    if (!file) return "Choose an image file first.";
+    if (SOCIAL_MEDIA_TYPES.indexOf(file.type) < 0) return "Only JPEG, PNG, and WebP images are supported.";
+    if (file.size <= 0 || file.size > SOCIAL_MEDIA_MAX_BYTES) return "Images must be smaller than or equal to 8 MB.";
+    return "";
+  }
+  function uploadSocialImage(client, userId, recordId, file) {
+    var ext = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
+    var path = userId + "/" + recordId + "/media." + ext;
+    return client.storage.from(SOCIAL_MEDIA_BUCKET).upload(path, file, { upsert: false, contentType: file.type, cacheControl: "3600" })
+      .then(function (res) {
+        if (res.error) throw res.error;
+        return path;
+      });
+  }
   function publish() {
     var ctx = clientAndUser();
     if (!ctx.client || !ctx.user) { status("social-compose-status", "Sign in to publish a post.", false); return; }
     var caption = document.getElementById("social-caption").value.trim();
     var audience = document.getElementById("social-audience").value;
-    if (!caption) { status("social-compose-status", "Write something before publishing.", false); return; }
+    var fileInput = document.getElementById("social-post-media");
+    var file = fileInput && fileInput.files ? fileInput.files[0] : null;
+    if (!caption && !file) { status("social-compose-status", "Write something or attach an image before publishing.", false); return; }
     if (caption.length > 3000) { status("social-compose-status", "Posts are limited to 3,000 characters.", false); return; }
+    var invalid = file ? validateSocialImage(file) : "";
+    if (invalid) { status("social-compose-status", invalid, false); return; }
+    var postId = window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : null;
+    if (!postId) { status("social-compose-status", "This browser cannot securely create a media identifier. Update your browser and retry.", false); return; }
+    var path = file ? ctx.user.id + "/" + postId + "/media." + (file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp") : null;
     status("social-compose-status", "Publishing…", true);
-    ctx.client.from("social_posts").insert({ author_id: ctx.user.id, caption: caption, audience: audience, status: "published" })
+    ctx.client.from("social_posts").insert({ id: postId, author_id: ctx.user.id, caption: caption, audience: audience, status: "published", media_path: path })
       .then(function (res) {
-        if (res.error) { status("social-compose-status", res.error.message || "Could not publish. Apply the social migrations to staging first.", false); return; }
+        if (res.error) throw res.error;
+        return file ? uploadSocialImage(ctx.client, ctx.user.id, postId, file).then(function () { return postId; }) : postId;
+      }).then(function () {
         document.getElementById("social-caption").value = "";
+        if (fileInput) fileInput.value = "";
         status("social-compose-status", "Post published.", true);
         loadFeed();
+      }).catch(function (err) {
+        status("social-compose-status", "Could not publish the post/media. " + (err && err.message ? err.message : "Please retry."), false);
+        if (file) ctx.client.from("social_posts").delete().eq("id", postId).eq("author_id", ctx.user.id).then(function () {});
       });
   }
   function publishStory() {
     var ctx = clientAndUser(), input = document.getElementById("social-story-text");
     if (!ctx.client || !ctx.user) { status("social-story-status", "Sign in to share a story.", false); return; }
     var text = input.value.trim();
-    if (!text || text.length > 1000) { status("social-story-status", "Enter a story of 1–1,000 characters.", false); return; }
-    ctx.client.from("social_stories").insert({ author_id: ctx.user.id, text_content: text, audience: document.getElementById("social-story-audience").value })
-      .then(function (res) {
-        if (res.error) { status("social-story-status", "Could not share story. Apply the social migration in staging first.", false); return; }
-        input.value = ""; status("social-story-status", "Story shared; it expires after 24 hours.", true); loadStories();
+    var fileInput = document.getElementById("social-story-media");
+    var file = fileInput && fileInput.files ? fileInput.files[0] : null;
+    if ((!text && !file) || text.length > 1000) { status("social-story-status", "Enter a story of up to 1,000 characters or attach an image.", false); return; }
+    var invalid = file ? validateSocialImage(file) : "";
+    if (invalid) { status("social-story-status", invalid, false); return; }
+    var storyId = window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : null;
+    if (!storyId) { status("social-story-status", "This browser cannot securely create a media identifier. Update your browser and retry.", false); return; }
+    var path = file ? ctx.user.id + "/" + storyId + "/media." + (file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp") : null;
+    status("social-story-status", "Sharing story…", true);
+    ctx.client.from("social_stories").insert({ id: storyId, author_id: ctx.user.id, text_content: text, audience: document.getElementById("social-story-audience").value, media_path: path })
+      .then(function (res) { if (res.error) throw res.error; return file ? uploadSocialImage(ctx.client, ctx.user.id, storyId, file) : null; })
+      .then(function () { input.value = ""; if (fileInput) fileInput.value = ""; status("social-story-status", "Story shared; it expires after 24 hours.", true); loadStories(); })
+      .catch(function (err) {
+        status("social-story-status", "Could not share story/media. " + (err && err.message ? err.message : "Please retry."), false);
+        if (file) ctx.client.from("social_stories").delete().eq("id", storyId).eq("author_id", ctx.user.id).then(function () {});
       });
   }
-  function loadStories() {
-    var ctx = clientAndUser(), list = document.getElementById("social-story-list");
-    if (!list) return;
-    list.replaceChildren();
-    if (!ctx.client || !ctx.user) return;
-    ctx.client.from("social_stories").select("id,author_id,text_content,audience,created_at,expires_at")
-      .gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(30)
-      .then(function (res) {
-        if (res.error) { status("social-story-status", "Stories are unavailable until the social migration is applied.", false); return; }
-        (res.data || []).forEach(function (story) {
-          var card = el("article", { className: "panel" });
-          card.appendChild(el("p", { className: "sub" }, (story.author_id === ctx.user.id ? "Your story" : "Member story") + " · expires " + new Date(story.expires_at).toLocaleString()));
-          card.appendChild(el("p", {}, story.text_content));
-          if (story.author_id === ctx.user.id) {
-            var remove = el("button", { type: "button", className: "btn s" }, "Delete story");
-            remove.addEventListener("click", function () {
-              ctx.client.from("social_stories").delete().eq("id", story.id).eq("author_id", ctx.user.id)
-                .then(function (done) { if (done.error) status("social-story-status", "Could not delete story.", false); else loadStories(); });
-            });
-            card.appendChild(remove);
-          }
-          list.appendChild(card);
-        });
-      });
+  function showSocialMedia(client, path, container, altText) {
+    if (!path || !container) return Promise.resolve();
+    return client.storage.from(SOCIAL_MEDIA_BUCKET).createSignedUrl(path, 300).then(function (res) {
+      if (res.error || !res.data || !res.data.signedUrl) return;
+      var img = el("img", { src: res.data.signedUrl, alt: altText || "Shared image", loading: "lazy", style: "display:block;max-width:100%;max-height:420px;object-fit:contain;border-radius:12px;margin:10px 0" });
+      container.appendChild(img);
+    });
   }
   function loadFollowRequests() {
     var ctx = clientAndUser(), list = document.getElementById("social-requests-list");
@@ -365,7 +394,7 @@
     if (!ctx.client || !ctx.user) { status("social-feed-status", "Sign in to view your feed.", false); return; }
     status("social-feed-status", "Loading posts…", true);
     ctx.client.from("social_posts")
-      .select("id,author_id,caption,audience,created_at")
+      .select("id,author_id,caption,audience,media_path,created_at")
       .eq("status", "published").order("created_at", { ascending: false }).limit(50)
       .then(function (res) {
         if (res.error) { status("social-feed-status", "Feed unavailable. Apply the social migrations to staging and confirm RLS policies.", false); return; }
