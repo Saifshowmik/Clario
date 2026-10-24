@@ -98,3 +98,22 @@ begin
   end;
 end $$;
 reset role;
+
+-- Test server-derived post reporting.
+insert into public.social_posts(id,author_id,caption,audience,status)
+values ('20000000-0000-4000-8000-000000000001',
+        '10000000-0000-4000-8000-000000000002',
+        'Reported post test','public','published');
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000003',false);
+set role authenticated;
+select public.report_social_post('20000000-0000-4000-8000-000000000001','spam','Post report integration test');
+reset role;
+do $$
+begin
+  if not exists(select 1 from public.social_reports
+    where post_id='20000000-0000-4000-8000-000000000001'
+      and reporter_id='10000000-0000-4000-8000-000000000003'
+      and reported_user_id='10000000-0000-4000-8000-000000000002') then
+    raise exception 'Post report did not retain server-derived author and post ID';
+  end if;
+end $$;
