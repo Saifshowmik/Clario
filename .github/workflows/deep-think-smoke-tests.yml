@@ -25,6 +25,13 @@ jobs:
           grep -q 'function validateSocialImage' public/social-studio.js
           grep -q 'function loadStories' public/social-studio.js
           grep -q '202610240007_social_media.sql' docs/SCREEN_IMPLEMENTATION_TRACKER.md
+          grep -q "values ('social-media','social-media',false,8388608" supabase/migrations/202610240007_social_media.sql
+          grep -q "allowed_mime_types=array\['image/jpeg','image/png','image/webp'\]" supabase/migrations/202610240007_social_media.sql
+          grep -q 'Social media authorized read' supabase/migrations/202610240007_social_media.sql
+          grep -q "not public.clario_social_is_blocked(auth.uid(),p.author_id)" supabase/migrations/202610240007_social_media.sql
+          grep -q "s.expires_at>now()" supabase/migrations/202610240007_social_media.sql
+          grep -q "p.media_path=name" supabase/migrations/202610240007_social_media.sql
+          grep -q "s.media_path=name" supabase/migrations/202610240007_social_media.sql
           grep -q 'profile-display-name' public/profile-studio.js
           grep -q 'create policy "Profile media owner read"' supabase/migrations/202610240006_private_profile_media.sql
           grep -q 'public=false' supabase/migrations/202610240006_private_profile_media.sql
