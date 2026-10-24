@@ -20,6 +20,7 @@ jobs:
         run: |
           node --check public/deep-think.js
           node --check public/profile-studio.js
+          node --check public/social-studio.js
       - name: Verify Deep Think is wired into the app
         run: |
           grep -q 'id="deep-think-start"' public/index.html
@@ -27,6 +28,9 @@ jobs:
           grep -q '<script src="profile-studio.js"></script>' public/index.html
           grep -q 'Edit social profile' public/profile-studio.js
           grep -q 'profile_visibility' public/profile-studio.js
+          grep -q '<script src="social-studio.js"></script>' public/index.html
+          grep -q 'social_posts' public/social-studio.js
+          grep -q 'social_comments' public/social-studio.js
           grep -q 'submit_deep_think_case' public/deep-think.js
           grep -q 'review_deep_think_case' public/deep-think.js
       - name: Verify Deep Think does not explicitly call AI services
@@ -47,6 +51,8 @@ jobs:
           grep -q "new.role is distinct from old.role" supabase/migrations/202610240002_social_profile_foundation.sql
           grep -q "new.plan is distinct from old.plan" supabase/migrations/202610240002_social_profile_foundation.sql
           grep -q "profile_visibility" supabase/migrations/202610240002_social_profile_foundation.sql
+          grep -q "social_posts_read_audience" supabase/migrations/202610240003_social_core.sql
+          grep -q "clario_guard_follow_identity" supabase/migrations/202610240003_social_core.sql
           grep -q "Self-promotion to owner unexpectedly succeeded" .github/scripts/test-social-profile-migration.sql
           grep -q "Self-upgrade to paid plan unexpectedly succeeded" .github/scripts/test-social-profile-migration.sql
       - name: Verify screen tracker preserves all designs
