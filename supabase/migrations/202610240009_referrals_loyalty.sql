@@ -103,7 +103,9 @@ begin
      update public.referrals set status='qualified',qualifying_payment_id=new.id,qualified_at=now() where id=v_ref.id;
      if coalesce(v_policy.referral_credit_amount,0)>0 then
        insert into public.reward_ledger(user_id,kind,amount,currency,source_payment_id,source_referral_id)
-       values(v_ref.referrer_id,'referral_credit',v_policy.referral_credit_amount,v_policy.credit_currency,new.id,v_ref.id)
+       values
+         (v_ref.referrer_id,'referral_credit',v_policy.referral_credit_amount,v_policy.credit_currency,new.id,v_ref.id),
+         (v_ref.referred_id,'referral_credit',v_policy.referral_credit_amount,v_policy.credit_currency,new.id,v_ref.id)
        on conflict do nothing;
        update public.referrals set status='rewarded' where id=v_ref.id;
      end if;
