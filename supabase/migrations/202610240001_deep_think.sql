@@ -96,6 +96,6 @@ begin
   insert into public.deep_think_case_events(case_id,actor_id,event_type,status,message)
   values(p_case_id,auth.uid(),case when p_status='delivered' then 'decision_delivered' else 'status_changed' end,p_status,
     case when p_status='delivered' then 'Human decision delivered' else 'Review status updated' end);
-end $;
+end $$;
 revoke all on function public.review_deep_think_case(uuid,text,text,text) from public, anon;
 grant execute on function public.review_deep_think_case(uuid,text,text,text) to authenticated;
