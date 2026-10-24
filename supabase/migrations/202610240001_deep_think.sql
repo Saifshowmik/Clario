@@ -33,7 +33,7 @@ revoke all on public.deep_think_case_events from anon, authenticated;
 grant select (id,case_id,actor_id,event_type,status,message,created_at) on public.deep_think_case_events to authenticated;
 drop policy if exists deep_think_events_own_or_reviewer on public.deep_think_case_events;
 create policy deep_think_events_own_or_reviewer on public.deep_think_case_events for select to authenticated
-using (exists(select 1 from public.deep_think_cases c where c.id=case_id and (c.user_id=auth.uid() or exists(select 1 from public.profiles p where p.id=auth.uid() and p.role = 'owner'))));
+using (exists(select 1 from public.deep_think_cases c where c.id=case_id and (c.user_id=auth.uid() or public.clario_can_review_deep_think())));
 create index if not exists deep_think_cases_user_created_idx on public.deep_think_cases(user_id, created_at desc);
 create index if not exists deep_think_cases_status_created_idx on public.deep_think_cases(status, created_at);
 alter table public.deep_think_cases enable row level security;
