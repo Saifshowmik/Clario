@@ -11,11 +11,11 @@ create table if not exists public.streak_daily (
 create table if not exists public.streak_milestones (
  id uuid primary key default gen_random_uuid(),
  user_id uuid not null references public.profiles(id) on delete cascade,
- milestone_days integer not null check(milestone_days in (60,365)),
+ milestone_days integer not null check(milestone_days=60 or (milestone_days>=365 and milestone_days%365=0)),
  achieved_on date not null,
  reward_code text not null check(reward_code in ('pro_7_days','extra_premium_1_day')),
  created_at timestamptz not null default now(),
- unique(user_id,milestone_days,achieved_on)
+ unique(user_id,milestone_days)
 );
 alter table public.streak_daily enable row level security;
 alter table public.streak_milestones enable row level security;
@@ -65,19 +65,13 @@ begin
      v_cursor:=v_cursor-1;
    end loop;
  end if;
- -- Best streak across all recorded qualified days.
- for v_day in select local_day from public.streak_daily where user_id=v_uid and qualifies order by local_day loop
-   if v_last is not null then null; end if;
-   if v_cursor is null then v_cursor:=v_day; v_current:=0; end if;
- end loop;
- -- Insert each achieved milestone once per milestone date. Rewards remain ledger entries until plan-entitlement enforcement is integrated.
- if v_current>=60 then
+ -- Record only exact milestone crossings, once per account and milestone.
+ if v_current=60 then
    insert into public.streak_milestones(user_id,milestone_days,achieved_on,reward_code)
-   values(v_uid,60,v_last,'pro_7_days') on conflict do nothing;
- end if;
- if v_current>=365 then
+   values(v_uid,60,v_today,'pro_7_days') on conflict do nothing;
+ elsif v_current>=365 and v_current%365=0 then
    insert into public.streak_milestones(user_id,milestone_days,achieved_on,reward_code)
-   values(v_uid,365,v_last,'extra_premium_1_day') on conflict do nothing;
+   values(v_uid,v_current,v_today,'extra_premium_1_day') on conflict do nothing;
  end if;
  select coalesce(max(run_len),0) into v_best from (
    select count(*) run_len from (
