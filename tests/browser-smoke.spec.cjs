@@ -9,10 +9,10 @@ test.beforeEach(async ({ page }) => {
 
 test('homepage renders and primary navigation switches views', async ({ page }) => {
   await expect(page.locator('#p-home')).toBeVisible();
-  await page.locator('[data-go="decide"]').first().click();
+  await page.locator('[data-go="decide"]:visible').first().click();
   await expect(page.locator('#p-decide')).toBeVisible();
   await expect(page.locator('#p-home')).toBeHidden();
-  await page.locator('[data-go="plans"]').first().click();
+  await page.locator('[data-go="plans"]:visible').first().click();
   await expect(page.locator('#p-plans')).toBeVisible();
 });
 
@@ -39,10 +39,10 @@ test('feature studios mount and open from their navigation controls', async ({ p
   for (const id of routeIds) {
     const pageSection = page.locator('#p-' + id);
     await expect(pageSection, id + ' studio should mount').toHaveCount(1);
-    await page.locator('[data-go="' + id + '"]').first().click();
+    await page.locator('[data-go="' + id + '"]:visible').first().click();
     await expect(pageSection, id + ' studio should become visible').toBeVisible();
   }
-  await page.locator('[data-go="acct"]').first().click();
+  await page.locator('[data-go="acct"]:visible').first().click();
   await page.locator('#profile-open').click();
   await expect(page.locator('#p-profile')).toBeVisible();
 });
