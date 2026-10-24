@@ -80,7 +80,7 @@ returns boolean language sql stable security definer set search_path=public,pg_t
   select exists(select 1 from public.social_blocks b
     where (b.blocker_id=p_user_a and b.blocked_id=p_user_b)
        or (b.blocker_id=p_user_b and b.blocked_id=p_user_a));
-$;
+$$;
 revoke all on function public.clario_social_is_blocked(uuid,uuid) from public;
 grant execute on function public.clario_social_is_blocked(uuid,uuid) to authenticated;
 
