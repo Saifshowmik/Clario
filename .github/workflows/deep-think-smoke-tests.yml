@@ -1,0 +1,180 @@
+name: Clario feature smoke tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feature/full-platform-recovery]
+
+jobs:
+  frontend-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          node --check public/deep-think.js
+          node --check public/profile-studio.js
+          node --check public/social-studio.js
+          node --check public/travel-studio.js
+          node --check public/rewards-studio.js
+          node --check public/streak-studio.js
+          node --check public/mind-studio.js
+          grep -q 'aria-live' public/mind-studio.js
+          grep -q 'aria-labelledby' public/mind-studio.js
+          grep -q 'var MOODS=' public/mind-studio.js
+          grep -q 'var NEEDS=' public/mind-studio.js
+          grep -q 'Delete this saved session?' public/mind-studio.js
+          grep -q 'mind_sessions_delete_own' supabase/migrations/202610240012_clario_mind.sql
+          grep -q 'User could not delete own saved session' .github/scripts/test-clario-mind-migration.sql
+          ! grep -q 'Temporary — expires after 24 hours' public/mind-studio.js
+          grep -q 'clario_mind_save_session' public/mind-studio.js
+          grep -q 'clario_mind_list_sessions' public/mind-studio.js
+          grep -q 'data-go="mind"' public/index.html
+          grep -q '<script src="mind-studio.js"></script>' public/index.html
+          grep -q 'enable row level security' supabase/migrations/202610240012_clario_mind.sql
+          grep -q 'p_age_band<>' supabase/migrations/202610240012_clario_mind.sql
+          grep -q 'crisisTitle:' public/mind-studio.js
+          grep -q 'href:"tel:999"' public/mind-studio.js
+          grep -q 'href:"tel:1098"' public/mind-studio.js
+          grep -q 'https://www.police.gov.bd/en/hot_line_number' public/mind-studio.js
+          grep -q 'https://msw.gov.bd/pages/static-pages/694032e235ce18e1c0563e15' public/mind-studio.js
+          grep -q 'bn:{title:' public/mind-studio.js
+          grep -q 'hi:{title:' public/mind-studio.js
+          grep -q 'expires_at' supabase/migrations/202610240012_clario_mind.sql
+          grep -q 'clario_deliver_streak_rewards' public/streak-studio.js
+          grep -q 'plan_entitlement_grants' supabase/migrations/202610240011_streak_entitlements.sql
+          grep -q 'clario_effective_plan' supabase/migrations/202610240011_streak_entitlements.sql
+          grep -q 'SOCIAL_MEDIA_MAX_BYTES = 8 \* 1024 \* 1024' public/social-studio.js
+          grep -q 'function validateSocialImage' public/social-studio.js
+          grep -q 'function loadStories' public/social-studio.js
+          grep -q '202610240007_social_media.sql' docs/SCREEN_IMPLEMENTATION_TRACKER.md
+          grep -q '202610240008_travel_planner.sql' docs/SCREEN_IMPLEMENTATION_TRACKER.md
+          grep -q 'travel_trips' public/travel-studio.js
+          grep -q 'Save private trip draft' public/travel-studio.js
+          grep -q 'function loadTrips' public/travel-studio.js
+          grep -q 'data-go="travel"' public/index.html
+          grep -q '<script src="travel-studio.js"></script>' public/index.html
+          grep -q 'enable row level security' supabase/migrations/202610240008_travel_planner.sql
+          grep -q 'clario_ensure_referral_code' supabase/migrations/202610240009_referrals_loyalty.sql
+          grep -q 'clario_apply_referral' supabase/migrations/202610240009_referrals_loyalty.sql
+          grep -q 'clario_process_paid_reward' supabase/migrations/202610240009_referrals_loyalty.sql
+          grep -q "new.status='approved' and old.status is distinct from 'approved'" supabase/migrations/202610240009_referrals_loyalty.sql
+          grep -q "v_ref.referred_id,'referral_credit'" supabase/migrations/202610240009_referrals_loyalty.sql
+          grep -q 'reward_ledger' public/rewards-studio.js
+          grep -q 'clario_apply_referral' public/rewards-studio.js
+          grep -q 'data-go="rewards"' public/index.html
+          grep -q '<script src="rewards-studio.js"></script>' public/index.html
+          grep -q '202610240010_streak_rewards.sql' docs/SCREEN_IMPLEMENTATION_TRACKER.md
+          grep -q 'clario_refresh_streak' public/streak-studio.js
+          grep -q 'data-go="streaks"' public/index.html
+          grep -q '<script src="streak-studio.js"></script>' public/index.html
+          grep -q "at time zone 'Asia/Dhaka'" supabase/migrations/202610240010_streak_rewards.sql
+          grep -q 'completed_decisions integer not null' supabase/migrations/202610240010_streak_rewards.sql
+          grep -q 'v_current>=60' supabase/migrations/202610240010_streak_rewards.sql
+          grep -q 'for v_milestone in 365..v_current by 365 loop' supabase/migrations/202610240010_streak_rewards.sql
+          grep -q 'using (user_id=auth.uid())' supabase/migrations/202610240008_travel_planner.sql
+          grep -q "values ('social-media','social-media',false,8388608" supabase/migrations/202610240007_social_media.sql
+          grep -q "allowed_mime_types=array\['image/jpeg','image/png','image/webp'\]" supabase/migrations/202610240007_social_media.sql
+          grep -q 'Social media authorized read' supabase/migrations/202610240007_social_media.sql
+          grep -q "not public.clario_social_is_blocked(auth.uid(),p.author_id)" supabase/migrations/202610240007_social_media.sql
+          grep -q "s.expires_at>now()" supabase/migrations/202610240007_social_media.sql
+          grep -q "p.media_path=name" supabase/migrations/202610240007_social_media.sql
+          grep -q "s.media_path=name" supabase/migrations/202610240007_social_media.sql
+          grep -q 'profile-display-name' public/profile-studio.js
+          grep -q 'create policy "Profile media owner read"' supabase/migrations/202610240006_private_profile_media.sql
+          grep -q 'public=false' supabase/migrations/202610240006_private_profile_media.sql
+          grep -q 'display_name' public/profile-studio.js
+          grep -q 'char_length(coalesce(new.display_name' supabase/migrations/202610240005_profile_display_name.sql
+      - name: Verify Deep Think is wired into the app
+        run: |
+          grep -q 'id="deep-think-start"' public/index.html
+          grep -q '<script src="deep-think.js"></script>' public/index.html
+          grep -q '<script src="profile-studio.js"></script>' public/index.html
+          grep -q 'Edit social profile' public/profile-studio.js
+          grep -q 'profile_visibility' public/profile-studio.js
+          grep -q '<script src="social-studio.js"></script>' public/index.html
+          grep -q 'social_posts' public/social-studio.js
+          grep -q 'social_comments' public/social-studio.js
+          grep -q 'function loadSafetyList' public/social-studio.js
+          grep -q 'social_blocks' public/social-studio.js
+          grep -q 'social_mutes' public/social-studio.js
+          grep -q 'Unblock' public/social-studio.js
+          grep -q 'Unmute' public/social-studio.js
+          grep -q 'submit_deep_think_case' public/deep-think.js
+          grep -q 'review_deep_think_case' public/deep-think.js
+      - name: Verify Deep Think does not explicitly call AI services
+        run: |
+          ! grep -Eiq 'openai|anthropic|gemini|fetch\(|embeddings|createChatCompletion' public/deep-think.js
+      - name: Verify database authorization safeguards
+        run: |
+          grep -q 'enable row level security' supabase/migrations/202610240001_deep_think.sql
+          grep -q "p.role = 'owner'" supabase/migrations/202610240001_deep_think.sql
+          ! grep -q "p.role in ('admin','owner')" supabase/migrations/202610240001_deep_think.sql
+          grep -q 'Owner access required' supabase/migrations/202610240001_deep_think.sql
+          grep -q 'deep_think_case_events' supabase/migrations/202610240001_deep_think.sql
+          ! grep -E 'grant select .*internal_note' supabase/migrations/202610240001_deep_think.sql
+          test "$(grep -Fc 'end $$;' supabase/migrations/202610240001_deep_think.sql)" -eq 2
+      - name: Verify profile privilege protection migration
+        run: |
+          grep -q "create trigger clario_guard_profile_privileges" supabase/migrations/202610240002_social_profile_foundation.sql
+          grep -q "new.role is distinct from old.role" supabase/migrations/202610240002_social_profile_foundation.sql
+          grep -q "new.plan is distinct from old.plan" supabase/migrations/202610240002_social_profile_foundation.sql
+          grep -q "profile_visibility" supabase/migrations/202610240002_social_profile_foundation.sql
+          grep -q "social_posts_read_audience" supabase/migrations/202610240003_social_core.sql
+          grep -q "clario_guard_follow_identity" supabase/migrations/202610240003_social_core.sql
+          grep -q "Self-promotion to owner unexpectedly succeeded" .github/scripts/test-social-profile-migration.sql
+          grep -q "Self-upgrade to paid plan unexpectedly succeeded" .github/scripts/test-social-profile-migration.sql
+      - name: Verify screen tracker preserves all designs
+        run: test "$(grep -Ec '^\| [0-9]+ \|' docs/SCREEN_IMPLEMENTATION_TRACKER.md)" -eq 135
+
+  migration-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: clario_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d clario_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/clario_test
+      TEST_USER: 10000000-0000-4000-8000-000000000001
+      TEST_OWNER: 10000000-0000-4000-8000-000000000002
+      TEST_OTHER: 10000000-0000-4000-8000-000000000003
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Prepare isolated Supabase-compatible auth fixture
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f .github/scripts/deep-think-ci-fixture.sql
+      - name: Apply migration to disposable PostgreSQL
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/202610240001_deep_think.sql
+      - name: Test submission, row-level isolation, and owner-only review
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "select set_config('request.jwt.claim.sub', '$TEST_USER', false); select public.submit_deep_think_case('CI test decision', 'test background', 'test goals', 'option A; option B', 'test constraints', 'test risks', 'CI only');"
+          own_count="$(psql "$DATABASE_URL" -Atq -c "SET ROLE authenticated; SELECT set_config('request.jwt.claim.sub', '$TEST_USER', false); SELECT count(*) FROM public.deep_think_cases;" | tail -n1)"
+          other_count="$(psql "$DATABASE_URL" -Atq -c "SET ROLE authenticated; SELECT set_config('request.jwt.claim.sub', '$TEST_OTHER', false); SELECT count(*) FROM public.deep_think_cases;" | tail -n1)"
+          owner_count="$(psql "$DATABASE_URL" -Atq -c "SET ROLE authenticated; SELECT set_config('request.jwt.claim.sub', '$TEST_OWNER', false); SELECT count(*) FROM public.deep_think_cases;" | tail -n1)"
+          test "$own_count" = "1"
+          test "$other_count" = "0"
+          test "$owner_count" = "1"
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "select set_config('request.jwt.claim.sub', '$TEST_OWNER', false); select public.review_deep_think_case((select id from public.deep_think_cases limit 1), 'delivered', 'CI human decision', 'CI private note');"
+          delivered="$(psql "$DATABASE_URL" -Atq -c "select count(*) from public.deep_think_cases where status='delivered' and final_decision='CI human decision';")"
+          test "$delivered" = "1"
+          if psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "select set_config('request.jwt.claim.sub', '$TEST_USER', false); select public.review_deep_think_case((select id from public.deep_think_cases limit 1), 'in_review', null, 'unauthorized');" >/tmp/unauthorized-review.log 2>&1; then
+            echo "A normal user unexpectedly reviewed a Deep Think case."
+            exit 1
+          fi
