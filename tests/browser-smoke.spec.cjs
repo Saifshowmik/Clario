@@ -61,3 +61,39 @@ test('plans page exposes the approved prices', async ({ page }) => {
   await expect(plans).toContainText('999');
   await expect(plans).toContainText('9,999');
 });
+
+test('decision studio validates input and produces a safe ranked result', async ({ page }) => {
+  await page.locator('[data-go="decide"]:visible').first().click();
+  await page.locator('#go').click();
+  await expect(page.locator('#err')).toContainText('at least two options');
+
+  await page.locator('#budget').fill('2000');
+  await page.locator('#n0').fill('<script>alert(1)</script>');
+  await page.locator('#p0').fill('1000');
+  await page.locator('#r0').fill('4.5');
+  await page.locator('#n1').fill('Budget option');
+  await page.locator('#p1').fill('700');
+  await page.locator('#r1').fill('4');
+  await page.locator('#n2').fill('Premium option');
+  await page.locator('#p2').fill('1900');
+  await page.locator('#r2').fill('5');
+  await page.locator('#go').click();
+
+  await expect(page.locator('#out')).toContainText('Your best pick');
+  await expect(page.locator('#out')).toContainText('Premium option');
+  await expect(page.locator('#out script')).toHaveCount(0);
+  await expect(page.locator('#out')).toContainText('<script>alert(1)</script>');
+});
+
+test('decision studio rejects invalid ratings and negative prices', async ({ page }) => {
+  await page.locator('[data-go="decide"]:visible').first().click();
+  await page.locator('#n0').fill('Option A');
+  await page.locator('#p0').fill('-5');
+  await page.locator('#r0').fill('4');
+  await page.locator('#n1').fill('Option B');
+  await page.locator('#p1').fill('500');
+  await page.locator('#r1').fill('6');
+  await page.locator('#go').click();
+  await expect(page.locator('#err')).toContainText('at least two options');
+  await expect(page.locator('#out')).toBeEmpty();
+});
