@@ -97,3 +97,36 @@ test('decision studio rejects invalid ratings and negative prices', async ({ pag
   await expect(page.locator('#err')).toContainText('at least two options');
   await expect(page.locator('#out')).toBeEmpty();
 });
+
+test('travel planner validates required trip details and never claims live booking', async ({ page }) => {
+  await page.locator('#p-home [data-go="travel"]').click();
+  await expect(page.locator('#p-travel')).toBeVisible();
+  await expect(page.locator('#p-travel')).toContainText('does not confirm live prices');
+  await page.locator('#travel-form button[type="submit"]').click();
+  await expect(page.locator('#travel-status')).toContainText('Please sign in before saving a trip');
+  await page.locator('#travel-title').fill('Test trip');
+  await page.locator('#travel-origin').fill('Dhaka');
+  await page.locator('#travel-destination').fill('Sylhet');
+  await page.locator('#travel-start').fill('2026-11-10');
+  await page.locator('#travel-end').fill('2026-11-01');
+  await page.locator('#travel-form button[type="submit"]').click();
+  await expect(page.locator('#travel-status')).toContainText('Please sign in before saving a trip');
+});
+
+test('profile studio defaults to private visibility and restricts editable fields', async ({ page }) => {
+  await page.locator('[data-go="acct"]:visible').first().click();
+  await page.locator('#profile-open').click();
+  await expect(page.locator('#p-profile')).toBeVisible();
+  await expect(page.locator('#profile-visibility')).toHaveValue('private');
+  await expect(page.locator('#p-profile')).toContainText('Account role and subscription plan are intentionally not editable');
+  await expect(page.locator('#p-profile input[type="file"]').first()).toHaveAttribute('accept', 'image/jpeg,image/png,image/webp');
+});
+
+test('social studio explains sign-in requirements instead of pretending a guest post was saved', async ({ page }) => {
+  await page.locator('#p-home [data-go="social"]').click();
+  await expect(page.locator('#p-social')).toBeVisible();
+  await page.locator('#social-caption').fill('Guest test post');
+  await page.locator('#social-post-media').setInputFiles([]);
+  await page.locator('#p-social button').filter({ hasText: 'Publish post' }).first().click();
+  await expect(page.locator('#social-compose-status')).toContainText('Sign in');
+});
