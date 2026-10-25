@@ -34,21 +34,24 @@ test('mobile viewport keeps navigation controls visible and usable', async ({ pa
   await expect(page.locator('#budget')).toBeVisible();
 });
 
-test('feature studios mount and open from their navigation controls', async ({ page }) => {
+test('feature studios mount and open from homepage shortcuts', async ({ page }) => {
   const routeIds = ['social', 'travel', 'rewards', 'streaks', 'mind'];
   for (const id of routeIds) {
-    const pageSection = page.locator('#p-' + id);
-    await expect(pageSection, id + ' studio should mount').toHaveCount(1);
-    await page.locator('[data-go="' + id + '"]:visible').first().click();
-    await expect(pageSection, id + ' studio should become visible').toBeVisible();
+    await page.locator('#p-home [data-go="' + id + '"]').click();
+    await expect(page.locator('#p-' + id), id + ' studio should become visible').toBeVisible();
+    await page.locator('[data-go="home"]:visible').first().click();
+    await expect(page.locator('#p-home')).toBeVisible();
   }
-  await page.locator('[data-go="acct"]:visible').first().click();
+  await page.locator('#p-home [data-go="acct"]').count().then(async count => {
+    if (count) await page.locator('#p-home [data-go="acct"]').click();
+    else await page.locator('[data-go="acct"]:visible').first().click();
+  });
   await page.locator('#profile-open').click();
   await expect(page.locator('#p-profile')).toBeVisible();
 });
 
 test('plans page exposes the approved prices', async ({ page }) => {
-  await page.locator('[data-go="plans"]').first().click();
+  await page.locator('[data-go="plans"]:visible').first().click();
   const plans = page.locator('#p-plans');
   await expect(plans).toContainText('29');
   await expect(plans).toContainText('99');
